@@ -1,17 +1,17 @@
 import sys
 import zmq
-sys.path.append("..")
 from common.zmqHelper import zhelper
-from sysconfig import TRACKER_IP, TRACKER_PORTS
+from appconfig import *
 
 class FileExplorer:
     def __init__(self):
         pass
 
-    def explore(self, userId):
+    def explore(self, userToken):
         """
         synchronous(blocking) file exploring
         """
         socket = zhelper.newSocket(zmq.REQ, TRACKER_IP, TRACKER_PORTS)
-        socket.send_json({})
+        socket.send_json({"token": userToken, "function": "ls"})
         files = socket.recv_json()
+        print("my dear client, your files are: ", files)

@@ -18,10 +18,15 @@ class ZMQHelper:
         udp : bool
             False by default meaning TCP connection protocol, if true the UDP will be used 
         """
+        return self._socket(stype, ip, ports, "connect", udp)
+
+    def newServerSocket(self, stype, ip, port, udp = False):
+        return self._socket(stype, ip, [port,], "bind", udp)
+
+    def _socket(self, stype, ip, ports, function, udp = False):
         protocol = "upd" if udp else "tcp"
         s = self.context.socket(stype)
         for port in ports:
-            s.connect (f"{protocol}://{ip}:{port}")
+            getattr(s, function)(f"{protocol}://{ip}:{port}")
         return s
-
 zhelper = ZMQHelper()
