@@ -11,7 +11,7 @@ class DBManager:
 	#dictToInsert will be like
 	# {"x": 10, "y":20, "z": 30}
 	def insertOne(self, dictToInsert):
-		self.db.my_collection.insert_one(dictToInsert)
+		return self.db.my_collection.insert_one(dictToInsert)
 
 
 	#key will be like
@@ -24,10 +24,17 @@ class DBManager:
 	def deleteOne(self, key):
 		self.db.my_collection.delete_one(key)
 
+	#key and update will be like
+	# {"key": value}
+	def updateOne(self, key, update):
+		self.db.my_collection.find_one_and_update(key, { '$set':update})
+
 
 if __name__ == "__main__":
 	dbmanager = DBManager("Wagih")
 	dbmanager.insertOne({"name": "omar", "email": "omarsgalal4@gmail.com"})
+	print(dbmanager.retrieveOne({"name":"omar"}))
+	dbmanager.updateOne({"name":"omar"}, {'email':'omar'})
 	print(dbmanager.retrieveOne({"name":"omar"}))
 	dbmanager.deleteOne({"name":"omar"})
 	print(dbmanager.retrieveOne({"name":"omar"}))
