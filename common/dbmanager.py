@@ -19,15 +19,38 @@ class DBManager:
 	def retrieveOne(self, key):
 		return self.db.my_collection.find_one(key)
 
+
+	#key will be like
+	# {"key": value}
+	# returns a list of dictionaries
+	def retrieveAll(self, key):
+		objects = []
+		for item in self.db.my_collection.find(key):
+			objects.append(item)
+		return objects
+
+
 	#key will be like
 	# {"key": value}
 	def deleteOne(self, key):
 		self.db.my_collection.delete_one(key)
 
+
 	#key and update will be like
 	# {"key": value}
 	def updateOne(self, key, update):
-		self.db.my_collection.find_one_and_update(key, { '$set':update})
+		self.db.my_collection.update_one(key, { '$set':update})
+
+
+
+	#increments a value with a specefic number
+	# if update = {"x": 3}
+	# then x will be incremented by 2
+	def incrementOne(self, key, update):
+		self.db.my_collection.update_one(key, { '$inc':update})
+
+
+
 
 
 if __name__ == "__main__":
