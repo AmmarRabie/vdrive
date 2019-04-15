@@ -46,15 +46,50 @@ class Downloader:
     	#finish
     	message = socket.recv_string()
     	print(message)
-    	return video
+    	self.video[nodeIndex] = video
+
+
+    def getIPs(self, videoName):
+    	
 
     
+    # downloads a file from servers
+    # ip_ports = [[ip, port], [ip, port], ...]
+    def download(self, ip_ports):
+    	#list for download threads
+    	downloadThreads = []
 
-    def download(self, ips_dict):
-    	pass
+    	# get number of nodes
+    	numNodes = len(ip_ports)
+
+    	#downloadedVideo
+    	self.video = [None] * numNodes
+
+    	#initialize threads
+    	for i in range(numNodes):
+    		thread = Thread(target=self.download_thread(ip_ports[i][0], ip_ports[i][1], i, numNodes))
+    		downloadThreads.append(thread)
+
+    	# start threads
+    	for thread in downloadThreads:
+    		thread.start()
+
+    	# join threads
+    	for thread in downloadThreads:
+    		thread.join()
+
+    	#create final video
+    	finalVideo = []
+    	for chunk in self.video:
+    		for element in chunk:
+    			finalVideo.append(element)
+
+    	return finalVideo
+
+
 
 
 if __name__ == '__main__':
 	downObj = Downloader()
-	video = downObj.download_thread("localhost", 6555, 0, 1)
+	video = downObj.download([["localhost", 6555], ["localhost", 6556], ["localhost", 6557], ["localhost", 6558]])
 	writeVideo(video, "dummy.mp4")
