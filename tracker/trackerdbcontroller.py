@@ -14,7 +14,7 @@ class TrackerDBController:
 		files = self.db.retrieveAll({"userID": userID})
 		fileNames = []
 		for item in files:
-			fileNames.append(files["fileName"])
+			fileNames.append(item["fileName"])
 		return fileNames
 
 
@@ -32,9 +32,8 @@ class TrackerDBController:
 	def getFileNodes(self, fileName):
 		nodesIDs = self.db.retrieveAll({"fileName": fileName})
 		aliveNodes = []
-		for item in nodesIDs:
-			if self.isNodeAlive(item["nodeID"]):
-				aliveNodes.append(item["nodeID"])
+		for nodeID in nodesIDs:
+				aliveNodes.append(self.db.retrieveOne({"nodeID": nodeID["nodeID"], "alive": True}))
 		return aliveNodes
 
 
@@ -51,12 +50,13 @@ class TrackerDBController:
 
 	#add file to a node
 	def addFileToNode(self, fileName, nodeID):
-		self.db.insertOne({"fileName": fileName}, {"nodeID": nodeID})
+		self.db.insertOne({"fileName": fileName, "nodeID": nodeID})
+		self.incFilesOnNode(nodeID)
 
 
 	#adds a machine node to the system
 	def insertNode(self, nodeID, numFiles=0, alive=True, IP="localhost"):
-		self.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive, "IP": IP})
+		self.db.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive, "IP": IP})
 
 
 	#increment number of files on a node

@@ -2,6 +2,7 @@ import zmq
 import sys
 import pickle
 import zlib
+from threading import Thread
 sys.path.append("../common")
 from util import readVideo
 
@@ -12,20 +13,25 @@ class Uploader:
 
     def __init__(self, port=6555):
     	self.port = port
-
-
-    def upload(self, path):
-
     	#create socket
-    	context = zmq.Context()
-    	socket = context.socket(zmq.REP)
-    	socket.bind("tcp://*:%s" % self.port)
+    	self.context = zmq.Context()
+    	self.socket = self.context.socket(zmq.REP)
+    	self.socket.bind("tcp://*:%s" % self.port)
+
+
+    def upload(self):
+
+    	#recieve the video name
+    	videoName = self.socket.recv_string()
+
+    	#send ack
+    	self.socket.send_string("ACK")
 
     	#read video
-    	video = readVideo(path)
+    	video = readVideo(videoName)
 
     	#recieve total length and self index
-    	config = socket.recv_string()
+    	config = self.socket.recv_string()
 
     	#extract total number of nodes and self index
     	config = config.split(" ")
@@ -39,10 +45,10 @@ class Uploader:
     		numberOfChunks += + len(video) % numNodes
 
     	#send to client number of chunks
-    	socket.send_string(str(numberOfChunks))
+    	self.socket.send_string(str(numberOfChunks))
 
     	#get ACK
-    	ack = socket.recv_string()
+    	ack = self.socket.recv_string()
 
     	print(len(video))
 
@@ -52,16 +58,16 @@ class Uploader:
     	    #print(type(video[i]))
     	    #p = pickle.dumps(video[i])
     	    #z = zlib.compress(p)
-    	    socket.send_pyobj(video[i])
+    	    self.socket.send_pyobj(video[i])
 
     	    #get ack
-    	    ack = socket.recv_string()
+    	    ack = self.socket.recv_string()
 
     	#finish
-    	socket.send_string("Finish Chunk :D")
-    	print("Finish Chunk :D")
+    	self.socket.send_string("Finish :D")
+    	print("Finish :D")
 
 
 if __name__ == '__main__':
 	upObj = Uploader(sys.argv[1])
-	upObj.upload("dummyvideo.mp4")
+	upObj.upload()
