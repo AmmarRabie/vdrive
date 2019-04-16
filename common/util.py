@@ -1,5 +1,4 @@
 
-
 CHUNK_SIZE = 10000
 
 
@@ -16,8 +15,17 @@ def readVideo(path):
 	return data
 
 
+def writeVideo(video, path):
+	file = open(path, "wb")
+
+	for item in video:
+		file.write(item)
+
+	file.close()
+
+
 
 if __name__ == "__main__":
-	data = readVideo("zmqHelper.py")
+	data = readVideo("dummyvideo.mp4")
 	print(len(data))
-	print(data)
+	writeVideo(data, "new.mp4")

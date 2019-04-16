@@ -55,8 +55,8 @@ class TrackerDBController:
 
 
 	#adds a machine node to the system
-	def addNode(self, nodeID, numFiles=0, alive=True):
-		self.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive})
+	def insertNode(self, nodeID, numFiles=0, alive=True, IP="localhost"):
+		self.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive, "IP": IP})
 
 
 	#increment number of files on a node
