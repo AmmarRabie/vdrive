@@ -34,7 +34,7 @@ class Client:
         #self.insertSocket.setsockopt(zmq.RCVTIMEO, 150)
         self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
         for i in range (2,len (sys.argv)):            
-            self.readSocket.connect(f"tcp://{sys.argv[i]}:{serveUserPort}")
+            self.readSocket.connect(f"tcp://{sys.argv[i]}:55555")
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()    
 
@@ -85,8 +85,10 @@ class Client:
         while True:
             try:
                 #message will contain the password 
-                message=self.readSocket.recv()
-                if message == password:
+                message=self.readSocket.recv_json()
+                dictMessage=json.loads(message)
+                print (dictMessage)
+                if dictMessage["Password"] == password:
                     return "1"
                 return "0"
             except zmq.ZMQError as e:
@@ -114,7 +116,8 @@ if __name__=="__main__":
     password=input("Please enter your password")
     c=Client()
     print(c.register(name,email,password))
-    c.delete(name)
+    #c.delete(name)
+    #print(c.Authenticate(name,password))
     while True:
         pass
 

@@ -95,7 +95,9 @@ class Master:
                    
                     #check for any slave that's not alive
                     for key,value in self.alive.items():
+                        print (value)
                         if value==False:
+                            print(f"missed data for {key}")
                             self.slavesMissedData[key].append(message)
 
             elif messageDict["operation"]=="delete":
@@ -119,10 +121,13 @@ class Master:
                             
     def handleSlaves(self):
         iamAliveSocket=self.context.socket(zmq.SUB)
-        for key in self.alive.keys():
-            iamAliveSocket.connect(f"tcp://{key}:{iamAliveSocketPort}")
-        
         iamAliveSocket.setsockopt_string(zmq.SUBSCRIBE, iamAliveTopic)
+        for key in self.alive.keys():
+            print(key)
+            iamAliveSocket.connect(f"tcp://127.0.0.1:{iamAliveSocketPort}")
+            print ("connected!")
+        
+        
         iamAliveSocket.setsockopt(zmq.RCVTIMEO, 30)
         while(True):
             #try to receive from every slave im alive signal
@@ -131,19 +136,25 @@ class Master:
             endTime=currentTime+1
             while time.time()<endTime:
                 try:    
-                    message=iamAliveSocket.recv_json()
-                    currentAliveSlaves.append(message["address"])
+                    #print("trying to receive from any slave")
+                    message=iamAliveSocket.recv_string()
+                    topic,ip=message.split()
+                    currentAliveSlaves.append(ip)
                 except zmq.ZMQError as e :
                     pass    
+           # print ("done one loop")        
             for key in self.alive.keys():
                 if key in currentAliveSlaves:
-                    if alive[key]==False:
-                        thread = threading.Thread(target=self.slaveRecoveryHandler, args=(key))
+                    if self.alive[key]==False:
+                        #print(f"the slave with ip {key} is dead")
+                        self.alive[key]=True
+                        thread = threading.Thread(target=self.slaveRecoveryHandler, args=(key,))
                         thread.start()
 
                 else:
                     #pass
                   #  print (key,)
+                    self.alive[key]=False
                     thread = threading.Thread(target=self.disconnectSlave, args=(key,))
                     thread.start()
             
@@ -179,6 +190,7 @@ class Master:
         slaveRecoveryHandlerSocket=self.context.socket(zmq.REQ)
         slaveRecoveryHandlerSocket.connect(f"tcp://{address}:{slaveRecoveryHandlerPort}")
         slaveRecoveryHandlerSocket.send_json(self.slavesMissedData[address])
+        print(f"sending to slave{self.slavesMissedData[address]}")
         message=slaveRecoveryHandlerSocket.recv()
         if message=="1":
             #successsfully updated the slave,send to all clients that the slave is alive now
@@ -198,4 +210,5 @@ class Master:
         }
         toBeSent=handleSlavesTopic+' '+json.dumps(messageDict)
         self.handleSlavesClientSocket.send_string(toBeSent)
+#time.sleep(10)
 m=Master()        
