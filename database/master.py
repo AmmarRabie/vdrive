@@ -79,6 +79,7 @@ class Master:
                 }
                 #check that the username is never used before
                 result=self.mydb.retrieveAll(dictt)
+                #print(result+"+++++++++++++++++++++++++++++++++")
                 if len(result)==0:
                     userDict={
                         "Password":messageDict["Password"],
@@ -99,6 +100,9 @@ class Master:
                         if value==False:
                             print(f"missed data for {key}")
                             self.slavesMissedData[key].append(message)
+                else:
+                    print("already existed")
+                    self.toClientSocket.send_string("0")        
 
             elif messageDict["operation"]=="delete":
                 #delete from my database
@@ -200,7 +204,7 @@ class Master:
                         }
             self.handleSlavesClientSocket.send_json(handleSlavesTopic,json.dumps(messageDict))
             alive[address]=True
-        zmq_disconnect(handleSlavesClientSocket,address)    
+        slaveRecoveryHandlerSocket.close()    
 
 
     def disconnectSlave(self,address):

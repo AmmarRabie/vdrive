@@ -34,7 +34,7 @@ class Client:
         #self.insertSocket.setsockopt(zmq.RCVTIMEO, 150)
         self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
         for i in range (2,len (sys.argv)):            
-            self.readSocket.connect(f"tcp://{sys.argv[i]}:55555")
+            self.readSocket.connect(f"tcp://{sys.argv[i]}:{serveUserPort}")
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()    
 
@@ -104,10 +104,13 @@ class Client:
         while True:
             message=handleSlavesSocket.recv_json()
             dictMessage=json.loads(message)
+            address=dictMessage["address"]
             if dictMessage["command"]=="disconnect":
-                zmq_disconnect(self.readSocket,dictMessage["address"])
+                print(f"disconnecting from slave {address}")
+                self.readSocket.disconnect(f"tcp://{address}:{serveUserPort}")
             if dictMessage["command"]== "connect":
-                zmq_connect(self.readSocket,dictMessage["address"])    
+                print(f"connecting to slave {address}")
+                self.readSocket.connect(f"tcp://{address}:{serveUserPort}")    
 
 
 if __name__=="__main__":

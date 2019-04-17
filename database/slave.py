@@ -111,7 +111,22 @@ class Slave:
         while True:
             message=self.recoveryHandlerSocket.recv_json()
             #insert the missed data
-            print (message)
+            #print (message)
+            for stringOperation in message:
+                operationDict=literal_eval(stringOperation)
+                if(operationDict["operation"]=="insert"):
+                    toBeInserted={
+                        "Username":operationDict["Username"],
+                        "Password":operationDict["Password"],
+                        "Email":operationDict["Email"]
+                    }
+                    self.mydb.insertOne(toBeInserted)
+                else:
+                    toBeDeleted={
+                        "Username":operationDict["Username"]
+                    }
+                    self.mydb.deleteOne(toBeDeleted)
+                
             #send ack to master
             self.recoveryHandlerSocket.send_string("1")
 
