@@ -1,12 +1,11 @@
 import sys
-sys.path.append('../common')
-from dbmanager import DBManager
-
+# sys.path.append('../common')
+from common.dbmanager import DBManager
 
 class TrackerDBController:
 
-	def __init__(self, dbname, host='localhost', port='27017'):
-		self.db = DBManager(dbname)
+	def __init__(self, dbname, host='localhost', port=27017):
+		self.db = DBManager(dbname, host, port)
 
 
 	#used for ls command
@@ -47,6 +46,30 @@ class TrackerDBController:
 	def setNodeState(self, nodeID, alive):
 		self.db.updateOne({"nodeID": nodeID}, {"alive": alive})
 
+	def setNodeBusyState(self, nodeIp, nodePort, isBusy):
+		# TODO: implement this function correctly
+		self.db.updateOne({nodeIp: nodePort}, {"busy": isBusy})
+
+	def updateNodesAliveStates(self, isAliveStates):
+		"""
+			update the data keepers machines with alive states given
+
+			parameter:
+				isAliveStates: a dictionary the key is ip of the machine, value is boolean (true means alive)
+		"""
+		# TODO: implement this function
+		pass
+
+	def getEmptyPortsAllMachines(self, isAliveStates):
+		"""
+			return all free (not busy) not died machines ports for every data keeper machine
+
+			return:
+				dict, key is the ip, value is a list of available ports like
+				{"192.265.86": ("5560, "786"), "157.264.46.1": ("123",), }
+		"""
+		# TODO: implement this function
+		pass
 
 	#add file to a node
 	def addFileToNode(self, fileName, nodeID):
