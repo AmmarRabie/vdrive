@@ -1,0 +1,46 @@
+import sys  
+sys.path.append('../common')
+from dbmanager import *
+
+class DatabaseHandler:
+    def __init__(self,dbname):
+        self.mydb=DBManager(dbname)
+
+
+    def insertUser(self,UserDict):
+        #check that the username is not taken
+        usernameDict={
+            "Username":UserDict["Username"]
+        }    
+        result=self.mydb.retrieveAll(usernameDict)
+        if len(result)==0:
+            self.mydb.insertOne(UserDict)
+            return True
+        else:
+            return False
+    def retrieveUser(self,usernameDict):
+        user=self.mydb.retrieveOne(usernameDict)
+        return user["Password"]
+    def deleteUser(self,usernameDict):
+        self.mydb.deleteOne(usernameDict)
+    def recoverDB(self,operationsArray):
+        for stringOperation in operationsArray:
+                operationDict=literal_eval(stringOperation)
+                if(operationDict["operation"]=="insert"):
+                    toBeInserted={
+                        "Username":operationDict["Username"],
+                        "Password":operationDict["Password"],
+                        "Email":operationDict["Email"]
+                    }
+                    self.insertOne(toBeInserted)
+                else:
+                    toBeDeleted={
+                        "Username":operationDict["Username"]
+                    }
+                    self.deleteOne(toBeDeleted)
+        
+
+
+        
+            
+

@@ -19,7 +19,7 @@ from ast import literal_eval
 from aliveSender import *
 sys.path.append('../common')
 from dbmanager import *
-
+from databaseHandler import *
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
 iamAliveTopic="12345"
@@ -34,7 +34,7 @@ slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with 
 
 class Slave:
     def __init__ (self):
-        self.mydb = DBManager("usersDatabaseSlave1")
+        self.mydb = DatabaseHandler("usersDatabaseSlave1")
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
@@ -72,7 +72,7 @@ class Slave:
             }    
             result=self.mydb.retrieveOne(toDbDict)
 
-            print(result)
+            #print(result)
             toBeSent={
                 "Password":result["Password"]
             }
@@ -101,18 +101,18 @@ class Slave:
                     "Password":messageDict["Password"],
                     "Email":messageDict["Email"]
                 }
-                self.mydb.insertOne(toBeAdded)
+                self.mydb.insertUser(toBeAdded)
             else:
                 toBeDeleted={
                     "Username":messageDict["Username"]
                 }    
-                self.mydb.deleteOne(toBeDeleted)
+                self.mydb.deleteUser(toBeDeleted)
     def recoverSlave(self):
         while True:
             message=self.recoveryHandlerSocket.recv_json()
             #insert the missed data
             #print (message)
-            for stringOperation in message:
+            ''' for stringOperation in message:
                 operationDict=literal_eval(stringOperation)
                 if(operationDict["operation"]=="insert"):
                     toBeInserted={
@@ -126,7 +126,8 @@ class Slave:
                         "Username":operationDict["Username"]
                     }
                     self.mydb.deleteOne(toBeDeleted)
-                
+            '''
+            self.mydb.recoverDB(message)    
             #send ack to master
             self.recoveryHandlerSocket.send_string("1")
 

@@ -27,6 +27,7 @@ import pymongo
 from aliveSender import *
 sys.path.append('../common')
 from dbmanager import *
+from databaseHandler import *
 
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
@@ -39,11 +40,13 @@ updateSlavesPort=55557 #this port will be used to update slaves when new inserti
 iamAliveSocketPort=55558
 slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with the missed data
 
+databaseName="usersDatabase"
+
 class Master:
     
     def __init__(self):    
         self.slavesMissedData={}
-        self.mydb = DBManager("usersDatabase")
+        self.mydb = DatabaseHandler("usersDatabase")
         #self.slavesIPs=[]
         self.alive={}
         self.context=zmq.Context()
@@ -73,7 +76,31 @@ class Master:
             message=self.toClientSocket.recv_json()
             messageDict=json.loads(message)
             if messageDict["operation"]=="insert":
+                userDict={
+                    "Username":messageDict["Username"],
+                    "Password":messageDict["Password"],
+                    "Email":messageDict["Email"]
+                }
+
+                result=self.mydb.insertUser(userDict)
+
+                if result:
+                    #insertion is successful update the slaves
+                    toBeSent=updateSlavesTopic+' '+message
+                    self.toSlavesSocket.send_string(toBeSent)
+                    #check for any slave that's not alive
+                    for key,value in self.alive.items():
+                        print (value)
+                        if value==False:
+                            #print(f"missed data for {key}")
+                            self.slavesMissedData[key].append(message)
+                    self.toClientSocket.send_string("1")  
+
+                else:
+                    self.toClientSocket.send_string("0")
+
                 
+                '''
                 dictt={
                     "Username":messageDict["Username"]
                 }
@@ -89,20 +116,15 @@ class Master:
                     #insert into my database
                     self.mydb.insertOne(userDict)
                     #send to slaves 
-                    toBeSent=updateSlavesTopic+' '+message
-                    self.toSlavesSocket.send_string(toBeSent)
                     print ("done sending")
                     self.toClientSocket.send_string("1")
                    
-                    #check for any slave that's not alive
-                    for key,value in self.alive.items():
-                        print (value)
-                        if value==False:
-                            print(f"missed data for {key}")
-                            self.slavesMissedData[key].append(message)
+                    
                 else:
                     print("already existed")
-                    self.toClientSocket.send_string("0")        
+                    self.toClientSocket.send_string("0")  
+                
+                '''      
 
             elif messageDict["operation"]=="delete":
                 #delete from my database
