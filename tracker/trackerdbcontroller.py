@@ -127,9 +127,9 @@ class TrackerDBController:
 				isAliveStates: a dictionary the key is ip of the machine, value is boolean (true means alive)
 		"""
 		# TODO: implement this function
-		for state in isAliveStates:
+		for ip, state in isAliveStates.items():
 			# self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None, None,None,None])
-			self.db.updateOne(  {"IP":  state["IP"]}, {"alive": state["alive"]})
+			self.db.updateOne(  {"IP":  ip}, {"alive": state})
 
 		pass
 
