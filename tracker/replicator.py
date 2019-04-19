@@ -16,9 +16,9 @@ class Replicator:
 
         self.db = TrackerDBController(dbname)
 
-        # self.db.insertNode(100)
-        # self.db.insertNode(110)
-        # self.db.insertNode(120)
+        # self.db.insertNode(100,"192.168.1.1")
+        # self.db.insertNode(110,"192.168.1.2")
+        # self.db.insertNode(120,"192.168.1.3")
 
         # self.db.insertFile("mai","1.mp4",100)
         # self.db.insertFile("mai","2.mp4",100)
@@ -26,8 +26,7 @@ class Replicator:
         # self.db.insertFile("aya","6.mp4",100)
         # self.db.insertFile("mai","6.mp4",100)
 
-        
-        pass
+# ######################################################################
 
 
     def replicator_process(self):
@@ -97,5 +96,5 @@ if __name__ == '__main__':
 
 
     while(True):
-        replicatorObject.replicator_process()
+        # replicatorObject.replicator_process()
         time.sleep(5)

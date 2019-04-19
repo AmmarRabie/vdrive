@@ -65,7 +65,7 @@ class DBManager:
 	#key and update will be like
 	# {"key": value}
 	def updateOne(self, key, update):
-		self.db.my_collection.update_one(key, { '$set':update})
+		self.db.my_collection.update_one(key, { '$set':update}, upsert=True)
 
 
 
@@ -73,7 +73,7 @@ class DBManager:
 	# if update = {"x": 3}
 	# then x will be incremented by 2
 	def incrementOne(self, key, update):
-		self.db.my_collection.update_one(key, { '$inc':update})
+		self.db.my_collection.update_one(key, { '$inc':update}, upsert=True)
 
 
 

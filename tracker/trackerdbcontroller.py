@@ -2,11 +2,10 @@ import sys
 sys.path.append('../common')
 from dbmanager import DBManager
 
-
 class TrackerDBController:
 
-	def __init__(self, dbname, host='localhost', port='27017'):
-		self.db = DBManager(dbname)
+	def __init__(self, dbname, host='localhost', port=27017):
+		self.db = DBManager(dbname, host, port)
 
 
 	#used for ls command
@@ -41,9 +40,8 @@ class TrackerDBController:
 	def getFileNodes(self, fileName):
 		nodesIDs = self.db.retrieveAll({"fileName": fileName})
 		aliveNodes = []
-		for item in nodesIDs:
-			if self.isNodeAlive(item["nodeID"]):
-				aliveNodes.append(item["nodeID"])
+		for nodeID in nodesIDs:
+				aliveNodes.append(self.db.retrieveOne({"nodeID": nodeID["nodeID"], "alive": True}))
 		return aliveNodes
 
 
@@ -111,6 +109,43 @@ class TrackerDBController:
 	def setNodeState(self, nodeID, alive):
 		self.db.updateOne({"nodeID": nodeID}, {"alive": alive})
 
+	def setNodeBusyState(self, nodeIp, nodePort, isBusy):
+		# TODO: implement this function correctly
+		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeID" ,"IP","port","busy"],[None, nodeIp,nodePort,None])
+		if (len(desiredNode) == 0):
+			print("Cannot Update State error in parameters")
+			return False
+		
+		self.db.updateOne({"nodeID" : int(desiredNode[0]["nodeID"]) ,"port" : nodePort , "IP": nodeIp}, {"busy": isBusy})
+		return True
+
+	def updateNodesAliveStates(self, isAliveStates):
+		"""
+			update the data keepers machines with alive states given
+
+			parameter:
+				isAliveStates: a dictionary the key is ip of the machine, value is boolean (true means alive)
+		"""
+		# TODO: implement this function
+		for state in isAliveStates:
+			# self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None, None,None,None])
+			self.db.updateOne(  {"IP":  state["IP"]}, {"alive": state["alive"]})
+
+		pass
+
+	def getEmptyPortsAllMachines(self):
+		"""
+			return all free (not busy) not died machines ports for every data keeper machine
+
+			return:
+				dict, key is the ip, value is a list of available ports like
+				{"192.265.86": ("5560, "786"), "157.264.46.1": ("123",), }
+		"""
+		# TODO: implement this function
+		
+		return self.db.retrieveAllWithAttrWithValue(["IP","busy"],[None,False])
+		
+		pass
 
 	#add file to a node
 	def addFileToNode(self, userID, fileName, nodeID):
@@ -119,8 +154,12 @@ class TrackerDBController:
 
 
 	#adds a new machine node to the system
-	def insertNode(self, nodeID, numFiles=0, alive=True, IP="localhost"):
-		self.db.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive, "IP": IP})
+	def insertNode(self, nodeID, IP , ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
+		self.db.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive,"IP": IP})
+		
+		for port in ports:
+			self.db.insertOne({"nodeID": nodeID, "port":port, "IP": IP , "busy":False})
+		
 
 
 	#increment number of files on a node
