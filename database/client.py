@@ -8,10 +8,12 @@ Client contains 2 threads one for inserting/deleting/Authenticating users
 the other one is for connecting or disconnecting with the slaves
 '''
 
+import sys
+sys.path.append("../")
 import zmq
 import json
 import threading
-import sys
+from common.util import generateToken
 handleSlavesTopic="9999"
 
 
@@ -52,7 +54,8 @@ class Client:
         
         try:
             message=self.insertSocket.recv()
-            return message
+            token = generateToken(username, password) if message == "1" else message
+            return token
         except zmq.ZMQError as e:
             if e.errno == zmq.EAGAIN:
                 #Master is dead!
@@ -75,7 +78,7 @@ class Client:
             if e.errno == zmq.EAGAIN:
                 #Master is dead!
                 return -1
-    def Authenticate(self,username,password):
+    def authenticate(self,username,password):
         dictMessage={
             "Username":username,
             "operation":"authenticate"
@@ -89,8 +92,8 @@ class Client:
                 dictMessage=json.loads(message)
                 print (dictMessage)
                 if dictMessage["Password"] == password:
-                    return "1"
-                return "0"
+                    return generateToken(username, password)
+                return ""
             except zmq.ZMQError as e:
                 print("couldn't receive")
                 pass

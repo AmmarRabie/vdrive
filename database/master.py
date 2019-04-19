@@ -94,8 +94,7 @@ class Master:
                     for key in self.slavesSockets.keys():
                         if self.alive[key]==True:
                             #try to send to the same slave while that slave is alive
-                            print (key)
-                            print("iteration+++++++++++++++++++++")
+                           
                             while True:
                                 try:
                                     print ("sending to slave" )
@@ -242,6 +241,7 @@ class Master:
         slaveRecoveryHandlerSocket=self.context.socket(zmq.REQ)
         slaveRecoveryHandlerSocket.connect(f"tcp://{address}:{slaveRecoveryHandlerPort}")
         slaveRecoveryHandlerSocket.send_json(self.slavesMissedData[address])
+        self.slavesMissedData[address]=[]
         print(f"sending to slave{self.slavesMissedData[address]}")
         message=slaveRecoveryHandlerSocket.recv()
         if message=="1":
