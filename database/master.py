@@ -25,8 +25,9 @@ import time
 import threading
 import pymongo
 from aliveSender import *
-sys.path.append('../common')
-from dbmanager import *
+sys.path.append("../")
+from common.util import getCurrMachineIp
+from common.dbmanager import *
 from databaseHandler import *
 
 updateSlavesTopic="55555"
@@ -62,12 +63,12 @@ class Master:
             self.slavesSockets[sys.argv[i]].setsockopt(zmq.RCVTIMEO, 30)
 
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://127.0.0.1:{serveUserPort}")
+        self.toClientSocket.bind(f"tcp://{getCurrMachineIp()}:{serveUserPort}")
         
         #self.toSlavesSocket=self.context.socket(zmq.PUB)
         #self.toSlavesSocket.bind(f"tcp://127.0.0.1:{updateSlavesPort}")
         self.handleSlavesClientSocket=self.context.socket(zmq.PUB)
-        self.handleSlavesClientSocket.bind(f"tcp://127.0.0.1:{updateClientsPort}")
+        self.handleSlavesClientSocket.bind(f"tcp://{getCurrMachineIp()}:{updateClientsPort}")
 
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()
@@ -174,9 +175,9 @@ class Master:
         iamAliveSocket=self.context.socket(zmq.SUB)
         iamAliveSocket.setsockopt_string(zmq.SUBSCRIBE, iamAliveTopic)
         for key in self.alive.keys():
-            print(key)
-            iamAliveSocket.connect(f"tcp://127.0.0.1:{iamAliveSocketPort}")
-            print ("connected!")
+            #print(key)
+            iamAliveSocket.connect(f"tcp://{key}:{iamAliveSocketPort}")
+            #print ("connected!")
         
         
         iamAliveSocket.setsockopt(zmq.RCVTIMEO, 30)

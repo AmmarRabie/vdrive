@@ -17,15 +17,16 @@ import threading
 import pymongo
 from ast import literal_eval
 from aliveSender import *
-sys.path.append('../common')
-from dbmanager import *
+sys.path.append('../')
+from common.util import *
+from common.dbmanager import *
 from databaseHandler import *
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
 iamAliveTopic="12345"
 
 
-serveUserPort=5555 #this port will be used to handle users requests (retrieve, delete,insert)
+serveUserPort=55555 #this port will be used to handle users requests (retrieve, delete,insert)
 updateClientsPort=55556 #this port will be used to update clients with the status of slaves
 updateSlavesPort=55557 #this port will be used to update slaves when new insertion or delete happens
 iamAliveSocketPort=55558
@@ -34,11 +35,11 @@ slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with 
 
 class Slave:
     def __init__ (self):
-        self.mydb = DatabaseHandler("usersDatabaseSlave1")
+        self.mydb = DatabaseHandler("usersDatabase")
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://127.0.0.1:{serveUserPort}")
+        self.toClientSocket.bind(f"tcp://{getCurrMachineIp()}:{serveUserPort}")
         
         self.toMasterSocket=self.context.socket(zmq.REP)
         self.toMasterSocket.connect(f"tcp://{sys.argv[1]}:{updateSlavesPort}")
@@ -46,10 +47,10 @@ class Slave:
         #self.toMasterSocket.setsockopt(zmq.RCVTIMEO, 30)
         
         self.iamAliveSocket=self.context.socket(zmq.PUB)
-        self.iamAliveSocket.bind(f"tcp://127.0.0.1:{iamAliveSocketPort}")
+        self.iamAliveSocket.bind(f"tcp://{getCurrMachineIp()}:{iamAliveSocketPort}")
 
         self.recoveryHandlerSocket=self.context.socket(zmq.REP)
-        self.recoveryHandlerSocket.bind(f"tcp://127.0.0.1:{slaveRecoveryHandlerPort}")
+        self.recoveryHandlerSocket.bind(f"tcp://{getCurrMachineIp()}:{slaveRecoveryHandlerPort}")
 
 
         iamAliveThread=threading.Thread(target=self.sendIamAlive,args=())
