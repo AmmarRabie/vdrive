@@ -1,4 +1,5 @@
 import sys  
+from ast import literal_eval
 sys.path.append('../common')
 from dbmanager import *
 
@@ -25,14 +26,16 @@ class DatabaseHandler:
         self.mydb.deleteOne(usernameDict)
     def recoverDB(self,operationsArray):
         for stringOperation in operationsArray:
+                
                 operationDict=literal_eval(stringOperation)
+                print(operationDict,"dict while recovering db")
                 if(operationDict["operation"]=="insert"):
                     toBeInserted={
                         "Username":operationDict["Username"],
                         "Password":operationDict["Password"],
                         "Email":operationDict["Email"]
                     }
-                    self.insertOne(toBeInserted)
+                    self.mydb.insertOne(toBeInserted)
                 else:
                     toBeDeleted={
                         "Username":operationDict["Username"]

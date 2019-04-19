@@ -16,7 +16,6 @@ import time
 import threading
 import pymongo
 from ast import literal_eval
-from aliveSender import *
 sys.path.append('../')
 from common.util import *
 from common.dbmanager import *
@@ -26,7 +25,7 @@ handleSlavesTopic="9999"
 iamAliveTopic="12345"
 
 
-serveUserPort=55555 #this port will be used to handle users requests (retrieve, delete,insert)
+serveUserPort=5555 #this port will be used to handle users requests (retrieve, delete,insert)
 updateClientsPort=55556 #this port will be used to update clients with the status of slaves
 updateSlavesPort=55557 #this port will be used to update slaves when new insertion or delete happens
 iamAliveSocketPort=55558
@@ -35,22 +34,22 @@ slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with 
 
 class Slave:
     def __init__ (self):
-        self.mydb = DatabaseHandler("usersDatabase")
+        self.mydb = DatabaseHandler("usersDatabaseSlave1")
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://{getCurrMachineIp()}:{serveUserPort}")
+        self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
         
         self.toMasterSocket=self.context.socket(zmq.REP)
-        self.toMasterSocket.connect(f"tcp://{sys.argv[1]}:{updateSlavesPort}")
+        self.toMasterSocket.bind(f"tcp://*:{updateSlavesPort}")
         #self.toMasterSocket.setsockopt_string(zmq.SUBSCRIBE, updateSlavesTopic)
         #self.toMasterSocket.setsockopt(zmq.RCVTIMEO, 30)
         
         self.iamAliveSocket=self.context.socket(zmq.PUB)
-        self.iamAliveSocket.bind(f"tcp://{getCurrMachineIp()}:{iamAliveSocketPort}")
+        self.iamAliveSocket.bind(f"tcp://*:{iamAliveSocketPort}")
 
         self.recoveryHandlerSocket=self.context.socket(zmq.REP)
-        self.recoveryHandlerSocket.bind(f"tcp://{getCurrMachineIp()}:{slaveRecoveryHandlerPort}")
+        self.recoveryHandlerSocket.bind(f"tcp://*:{slaveRecoveryHandlerPort}")
 
 
         iamAliveThread=threading.Thread(target=self.sendIamAlive,args=())
@@ -82,7 +81,7 @@ class Slave:
     def sendIamAlive(self):
         while True:
             #print ("sending my ip")
-            toBeSent=iamAliveTopic+' '+"127.0.0.1"
+            toBeSent=iamAliveTopic+' '+getCurrMachineIp()
             #print (toBeSent)
             self.iamAliveSocket.send_string(toBeSent)
             #print("sent")
@@ -114,7 +113,7 @@ class Slave:
         while True:
             message=self.recoveryHandlerSocket.recv_json()
             #insert the missed data
-            #print (message)
+            print ("recovering the db ",message)
             ''' for stringOperation in message:
                 operationDict=literal_eval(stringOperation)
                 if(operationDict["operation"]=="insert"):

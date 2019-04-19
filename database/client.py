@@ -13,7 +13,9 @@ sys.path.append("../")
 import zmq
 import json
 import threading
+from ast import literal_eval
 from common.util import generateToken
+from common.util import getCurrMachineIp
 handleSlavesTopic="9999"
 
 
@@ -32,10 +34,12 @@ class Client:
         self.context = zmq.Context()
         self.insertSocket=self.context.socket(zmq.REQ)
         self.insertSocket.connect(f"tcp://{sys.argv[1]}:{serveUserPort}")
+        print(getCurrMachineIp())
+        print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
         #self.insertSocket.setsockopt(zmq.RCVTIMEO, 150)
         self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
-        for i in range (2,len (sys.argv)):            
+        for i in range (1,len (sys.argv)):            
             self.readSocket.connect(f"tcp://{sys.argv[i]}:{serveUserPort}")
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()    
@@ -49,11 +53,16 @@ class Client:
             "Password":password,
             "Email":email,
             "operation":"insert"
-        }       
+        }
+        print("sending to master with ip")
+        print(sys.argv[1])
+        print(serveUserPort)       
         self.insertSocket.send_json(json.dumps(dictMessage))
-        
+        print("sent")
         try:
             message=self.insertSocket.recv()
+            print ("received from master")
+            print(message)
             token = generateToken(username, password) if message == "1" else message
             return token
         except zmq.ZMQError as e:
@@ -84,7 +93,7 @@ class Client:
             "operation":"authenticate"
         }
         self.readSocket.send_json(json.dumps(dictMessage))
-        
+        print("sending to master with ip"+sys.argv[1]+serveUserPort)
         while True:
             try:
                 #message will contain the password 
@@ -100,17 +109,24 @@ class Client:
                 #do nothing the client will  try to send to another DB    
     def handleSlaves(self):
         handleSlavesSocket=self.context.socket(zmq.SUB)
-        print (sys.argv[1])
-
-        handleSlavesSocket.connect(f"tcp://{sys.argv[1]}:{slaveRecoveryHandlerPort}")
+        #print (sys.argv[1])
+        print("entered handleslaves")
+        handleSlavesSocket.connect(f"tcp://{sys.argv[1]}:{updateClientsPort}")
         handleSlavesSocket.setsockopt_string(zmq.SUBSCRIBE, handleSlavesTopic)
         while True:
-            message=handleSlavesSocket.recv_json()
-            dictMessage=json.loads(message)
+            receivedMessage=handleSlavesSocket.recv_string()
+            topic,message=receivedMessage.split("{")
+            message="{"+message
+            dictMessage=literal_eval(message)
+            #print(message)
+            #dictMessage=json.loads(message)
             address=dictMessage["address"]
             if dictMessage["command"]=="disconnect":
                 print(f"disconnecting from slave {address}")
-                self.readSocket.disconnect(f"tcp://{address}:{serveUserPort}")
+                try:
+                    self.readSocket.disconnect(f"tcp://{address}:{serveUserPort}")
+                except  zmq.ZMQError as e:
+                    print("already disconnected")   
             if dictMessage["command"]== "connect":
                 print(f"connecting to slave {address}")
                 self.readSocket.connect(f"tcp://{address}:{serveUserPort}")    
