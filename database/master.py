@@ -18,13 +18,13 @@ toSlavesSocket => PUB/SUB socket that will publish to the slaves when either a n
 iamAliveSockets => PUB/SUB socket that will be used by the master to ensure that every slave is alive
 slaveRecoveryHandlerSocket=>REQ/REP to send the slaves the missed data
 '''
+import random
 import sys  
 import zmq
 import json
 import time
 import threading
 import pymongo
-from aliveSender import *
 sys.path.append("../")
 from common.util import getCurrMachineIp
 from common.dbmanager import *
@@ -58,12 +58,12 @@ class Master:
             #self.alive.append(true)
             self.alive[sys.argv[i]]=True
             self.slavesMissedData[sys.argv[i]]=[]
-            self.slavesSockets[sys.argv[i]]=(self.context.socket(zmq.REQ))
-            self.slavesSockets[sys.argv[i]].bind(f"tcp://{sys.argv[i]}:{updateSlavesPort}")
+            self.slavesSockets[sys.argv[i]]=(self.context.socket(zmq.REP))
+            self.slavesSockets[sys.argv[i]].bind(f"tcp://*:{updateSlavesPort}")
             self.slavesSockets[sys.argv[i]].setsockopt(zmq.RCVTIMEO, 30)
 
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://{getCurrMachineIp()}:{serveUserPort}")
+        self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
         
         #self.toSlavesSocket=self.context.socket(zmq.PUB)
         #self.toSlavesSocket.bind(f"tcp://127.0.0.1:{updateSlavesPort}")
@@ -80,6 +80,7 @@ class Master:
         while(True):
             message=self.toClientSocket.recv_json()
             messageDict=json.loads(message)
+            print("received data")
             if messageDict["operation"]=="insert":
                 userDict={
                     "Username":messageDict["Username"],
@@ -151,7 +152,6 @@ class Master:
                     self.toClientSocket.send_string("0")  
                 
                 '''      
-
             elif messageDict["operation"]=="delete":
                 #delete from my database
                 
@@ -191,9 +191,11 @@ class Master:
                     #print("trying to receive from any slave")
                     message=iamAliveSocket.recv_string()
                     topic,ip=message.split()
+                    print("ip:", ip, random.randint(0,1000))
                     currentAliveSlaves.append(ip)
                 except zmq.ZMQError as e :
-                    pass    
+                    print(e, random.randint(0,100))
+                    pass
            # print ("done one loop")        
             for key in self.alive.keys():
                 if key in currentAliveSlaves:
