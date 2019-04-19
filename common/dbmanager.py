@@ -29,6 +29,32 @@ class DBManager:
 			objects.append(item)
 		return objects
 
+	# # returns all records having thess attributes
+	# def retrieveAllWithAttr(self,attributes):
+	# 	# return self.db.my_collection.count({})
+	# 	dictionary = {}
+	# 	for attribute in attributes:
+	# 		dictionary[attribute] = {'$exists': True}
+	# 	return self.db.my_collection.find(dictionary)
+
+	def retrieveAllWithAttrWithValue(self,attributes,values):
+		dictionary = {}
+		dictionary2 = {}
+		i = 0
+		for attribute in attributes:
+			dictionary[attribute] = {'$exists': True}
+			if (values[i] != None):
+				dictionary2[attribute] = values[i]
+			i+=1
+
+		queryOutput = self.db.my_collection.find({"$and": [dictionary, dictionary2] },{'_id': False})
+
+		objects = []
+		for data in queryOutput:
+			objects.append(data)
+			
+		return objects
+
 
 	#key will be like
 	# {"key": value}
@@ -54,10 +80,11 @@ class DBManager:
 
 
 if __name__ == "__main__":
-	dbmanager = DBManager("Wagih")
-	dbmanager.insertOne({"name": "omar", "email": "omarsgalal4@gmail.com"})
-	print(dbmanager.retrieveOne({"name":"omar"}))
-	dbmanager.updateOne({"name":"omar"}, {'email':'omar'})
-	print(dbmanager.retrieveOne({"name":"omar"}))
-	dbmanager.deleteOne({"name":"omar"})
-	print(dbmanager.retrieveOne({"name":"omar"}))
+	# dbmanager = DBManager("Wagih")
+	# dbmanager.insertOne({"name": "omar", "email": "omarsgalal4@gmail.com"})
+	# print(dbmanager.retrieveOne({"name":"omar"}))
+	# dbmanager.updateOne({"name":"omar"}, {'email':'omar'})
+	# print(dbmanager.retrieveOne({"name":"omar"}))
+	# dbmanager.deleteOne({"name":"omar"})
+	# print(dbmanager.retrieveOne({"name":"omar"}))
+	x = 1
