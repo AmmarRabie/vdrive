@@ -40,9 +40,9 @@ class Slave:
         self.toClientSocket=self.context.socket(zmq.REP)
         self.toClientSocket.bind(f"tcp://127.0.0.1:{serveUserPort}")
         
-        self.toMasterSocket=self.context.socket(zmq.SUB)
+        self.toMasterSocket=self.context.socket(zmq.REP)
         self.toMasterSocket.connect(f"tcp://{sys.argv[1]}:{updateSlavesPort}")
-        self.toMasterSocket.setsockopt_string(zmq.SUBSCRIBE, updateSlavesTopic)
+        #self.toMasterSocket.setsockopt_string(zmq.SUBSCRIBE, updateSlavesTopic)
         #self.toMasterSocket.setsockopt(zmq.RCVTIMEO, 30)
         
         self.iamAliveSocket=self.context.socket(zmq.PUB)
@@ -88,11 +88,12 @@ class Slave:
             #time.sleep(5)
     def updateDB(self):
         while True:
-            message=self.toMasterSocket.recv_string()
-            print (message[1])
-            topic,messageString=message.split("{")
-            messageString="{"+messageString
-            messageDict=literal_eval(messageString)
+            message=self.toMasterSocket.recv_json()
+            print (message)
+            print("received from master++++++++++++++++++++++++++")
+            messageDict=json.loads(message)
+            #messageString="{"+messageString
+            #messageDict=literal_eval(messageString)
             #messageDict=json.loads(message)
             if messageDict["operation"]=="insert":
 
@@ -107,6 +108,7 @@ class Slave:
                     "Username":messageDict["Username"]
                 }    
                 self.mydb.deleteUser(toBeDeleted)
+            self.toMasterSocket.send_string("1")    
     def recoverSlave(self):
         while True:
             message=self.recoveryHandlerSocket.recv_json()
