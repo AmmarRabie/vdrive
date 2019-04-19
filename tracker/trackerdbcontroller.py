@@ -27,21 +27,21 @@ class TrackerDBController:
 
 
 	#returns True if node is alive and False if not
-	def isNodeAlive(self, nodeID):
-		return self.db.retrieveOne({"nodeID": nodeID})["alive"]
+	def isNodeAlive(self, nodeIp):
+		return self.db.retrieveOne({"nodeIP": nodeIp})["alive"]
 
 
 	#return the number of files on the node
-	def getNodeNumberOfFiles(self, nodeID):
-		return self.db.retrieveOne({"nodeID": nodeID})["numFiles"]
+	def getNodeNumberOfFiles(self, nodeIp):
+		return self.db.retrieveOne({"nodeIP": nodeIp})["numFiles"]
 
 
 	#returns alive nodes IDs where the file is there
 	def getFileNodes(self, fileName):
-		nodesIDs = self.db.retrieveAll({"fileName": fileName})
+		records = self.db.retrieveAll({"fileName": fileName})
 		aliveNodes = []
-		for nodeID in nodesIDs:
-				aliveNodes.append(self.db.retrieveOne({"nodeID": nodeID["nodeID"], "alive": True}))
+		for record in records:
+				aliveNodes.append(self.db.retrieveOne({"nodeIP": record["nodeIP"], "alive": True}))
 		return aliveNodes
 
 
@@ -66,7 +66,7 @@ class TrackerDBController:
 
 	# Returns list of all Nodes' ids
 	def listAllNodes(self):
-		queryOutput =  self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None,None,None,None,None])
+		queryOutput =  self.db.retrieveAllWithAttrWithValue(["nodeIP", "numFiles", "alive"],[None,None,None,None])
 
 		# objects = []
 
@@ -84,7 +84,7 @@ class TrackerDBController:
 	# Returns list of all Nodes' ids
 
 	def listAliveNodes(self):
-		queryOutput =  self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None,None,True,None])
+		queryOutput =  self.db.retrieveAllWithAttrWithValue(["nodeIP", "numFiles", "alive"],[None,None,True])
 
 		# objects = []
 
@@ -97,26 +97,26 @@ class TrackerDBController:
 	
 
 	#insert a new file for a specefic user in node
-	def insertFile(self, userID, fileName, nodeID):
-		self.db.insertOne({"userID": userID, "fileName": fileName , "nodeID":nodeID})
-		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[nodeID,None,True,None])
-		self.db.incrementOne({ "nodeID": nodeID, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True, "IP": desiredNode[0]["IP"] }, {"numFiles": 1})
+	def insertFile(self, userID, fileName, nodeIp):
+		self.db.insertOne({"userID": userID, "fileName": fileName , "nodeIP":nodeIp})
+		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeIP", "numFiles", "alive"],[nodeIp,None,True])
+		self.db.incrementOne({ "nodeIP": desiredNode[0]["nodeIP"], "numFiles":int(desiredNode[0]["numFiles"]), "alive":True }, {"numFiles": 1})
 
 
 
 	#make the node alive or not
 	#alive is a bool variable
-	def setNodeState(self, nodeID, alive):
-		self.db.updateOne({"nodeID": nodeID}, {"alive": alive})
+	def setNodeState(self, nodeIp, alive):
+		self.db.updateOne({"nodeIP": nodeIp}, {"alive": alive})
 
 	def setNodeBusyState(self, nodeIp, nodePort, isBusy):
 		# TODO: implement this function correctly
-		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeID" ,"IP","port","busy"],[None, nodeIp,nodePort,None])
+		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeIP","port","busy"],[ nodeIp,nodePort,None])
 		if (len(desiredNode) == 0):
 			print("Cannot Update State error in parameters")
 			return False
 		
-		self.db.updateOne({"nodeID" : int(desiredNode[0]["nodeID"]) ,"port" : nodePort , "IP": nodeIp}, {"busy": isBusy})
+		self.db.updateOne({"nodeIP" : int(desiredNode[0]["nodeIP"]) ,"port" : nodePort}, {"busy": isBusy})
 		return True
 
 	def updateNodesAliveStates(self, isAliveStates):
@@ -127,9 +127,9 @@ class TrackerDBController:
 				isAliveStates: a dictionary the key is ip of the machine, value is boolean (true means alive)
 		"""
 		# TODO: implement this function
-		for state in isAliveStates:
+		for ip, state in isAliveStates.items():
 			# self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None, None,None,None])
-			self.db.updateOne(  {"IP":  state["IP"]}, {"alive": state["alive"]})
+			self.db.updateOne(  {"nodeIP":  ip}, {"alive": state})
 
 		pass
 
@@ -143,33 +143,33 @@ class TrackerDBController:
 		"""
 		# TODO: implement this function
 		
-		return self.db.retrieveAllWithAttrWithValue(["IP","busy"],[None,False])
+		return self.db.retrieveAllWithAttrWithValue(["nodeIP","busy"],[None,False])
 		
 		pass
 
 	#add file to a node
-	def addFileToNode(self, userID, fileName, nodeID):
-		self.db.insertOne({"userID":userID ,"fileName": fileName, "nodeID": nodeID})
-		self.incFilesOnNode(nodeID)
+	def addFileToNode(self, userID, fileName, nodeIp):
+		self.db.insertOne({"userID":userID ,"fileName": fileName, "nodeIP": nodeIp})
+		self.incFilesOnNode(nodeIp)
 
 
 	#adds a new machine node to the system
-	def insertNode(self, nodeID, IP , ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
-		self.db.insertOne({"nodeID": nodeID, "numFiles": numFiles, "alive": alive,"IP": IP})
+	def insertNode(self, nodeIp, IP , ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
+		self.db.insertOne({"nodeIP": nodeIp, "numFiles": numFiles, "alive": alive})
 		
 		for port in ports:
-			self.db.insertOne({"nodeID": nodeID, "port":port, "IP": IP , "busy":False})
+			self.db.insertOne({"nodeIP": nodeIp, "port":port , "busy":False})
 		
 
 
 	#increment number of files on a node
-	def incFilesOnNode(self, nodeID):
+	def incFilesOnNode(self, nodeIp):
 		# self.db.incrementOne({"nodeID": nodeID}, {"numFiles": 1})
-		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[nodeID,None,True,None])
-		self.db.incrementOne({ "nodeID": nodeID, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True, "IP": desiredNode[0]["IP"] }, {"numFiles": 1})
+		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeIP", "numFiles", "alive", "IP"],[nodeIp,None,True,None])
+		self.db.incrementOne({ "nodeIP": nodeIp, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True }, {"numFiles": 1})
 
 
 	#decrement number of files on a node
-	def decFilesOnNode(self, nodeID):
-		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[nodeID,None,True,None])
-		self.db.incrementOne({"nodeID": nodeID, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True, "IP":desiredNode[0]["IP"]}, {"numFiles": -1})
+	def decFilesOnNode(self, nodeIp):
+		desiredNode = self.db.retrieveAllWithAttrWithValue(["nodeIP", "numFiles", "alive", "IP"],[nodeIp,None,True,None])
+		self.db.incrementOne({"nodeIP": nodeIp, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True}, {"numFiles": -1})
