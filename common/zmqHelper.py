@@ -20,11 +20,19 @@ class ZMQHelper:
         """
         return self._socket(stype, ip, ports, "connect", udp)
 
+    def newSocketMultiIps(self, stype, ips, port, udp = False):
+        protocol = "udp" if udp else "tcp"
+        s = self.context.socket(stype)
+        for ip in ips:
+            s.connect(f"{protocol}://{ip}:{port}")
+        return s
     def newServerSocket(self, stype, ip, port, udp = False):
-        return self._socket(stype, ip, [port,], "bind", udp)
+        # TODO: don't take the ip parameter here, or send it and as the user wants send
+        return self._socket(stype, "*", [port,], "bind", udp)
+        # return self._socket(stype, ip, [port,], "bind", udp)
 
     def _socket(self, stype, ip, ports, function, udp = False):
-        protocol = "upd" if udp else "tcp"
+        protocol = "udp" if udp else "tcp"
         s = self.context.socket(stype)
         for port in ports:
             getattr(s, function)(f"{protocol}://{ip}:{port}")
