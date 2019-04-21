@@ -20,7 +20,7 @@ class DatabaseHandler:
         else:
             return False
     def retrieveUser(self,usernameDict):
-        user=self.mydb.retrieveOne(usernameDict)
+        user=self.mydb.retrieveOne({"Username":usernameDict})
         return user["Password"]
     def deleteUser(self,usernameDict):
         self.mydb.deleteOne(usernameDict)

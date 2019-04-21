@@ -20,16 +20,11 @@ sys.path.append('../')
 from common.util import *
 from common.dbmanager import *
 from databaseHandler import *
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
+
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
 iamAliveTopic="12345"
-
-
-serveUserPort=55555 #this port will be used to handle users requests (retrieve, delete,insert)
-updateClientsPort=55556 #this port will be used to update clients with the status of slaves
-updateSlavesPort=55557 #this port will be used to update slaves when new insertion or delete happens
-iamAliveSocketPort=55558
-slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with the missed data
 
 
 class Slave:

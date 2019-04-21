@@ -45,7 +45,7 @@ def getCurrMachineIp():
 def generateToken(username, password):
 	return jwt.encode(
         {'username': username, "pass": password, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10000)},
-        TOKEN_SECRET)
+        TOKEN_SECRET).decode()
 
 def decodeToken(token):
 	try:

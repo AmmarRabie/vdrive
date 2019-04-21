@@ -17,14 +17,7 @@ from ast import literal_eval
 from common.util import generateToken
 from common.util import getCurrMachineIp
 handleSlavesTopic="9999"
-
-
-serveUserPort=55555 #this port will be used to handle users requests (retrieve, delete,insert)
-updateClientsPort=55556 #this port will be used to update clients with the status of slaves
-updateSlavesPort=55557 #this port will be used to update slaves when new insertion or delete happens
-iamAliveSocketPort=55558
-slaveRecoveryHandlerPort=55559 #this port will be used to update the slave with the missed data
-
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
 
 class Client:
     def __init__(self):
@@ -60,10 +53,10 @@ class Client:
         self.insertSocket.send_json(json.dumps(dictMessage))
         print("sent")
         try:
-            message=self.insertSocket.recv()
+            message=self.insertSocket.recv_string()
             print ("received from master")
             print(message)
-            token = generateToken(username, password) if message == "1" else message
+            token = generateToken(username, password) if message == "1" else ""
             return token
         except zmq.ZMQError as e:
             if e.errno == zmq.EAGAIN:
@@ -92,8 +85,9 @@ class Client:
             "Username":username,
             "operation":"authenticate"
         }
+        print("database/client: authenticate function dict", dictMessage)
         self.readSocket.send_json(json.dumps(dictMessage))
-        print("sending to master with ip"+sys.argv[1]+serveUserPort)
+        print("sending to master with ip"+sys.argv[1], serveUserPort)
         while True:
             try:
                 #message will contain the password 
