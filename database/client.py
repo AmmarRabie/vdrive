@@ -21,16 +21,13 @@ from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAli
 
 class Client:
     def __init__(self):
-        """"
-        at init establish the connection with the master and slaves script
-        """
+        #at init establish the connection with the master and slaves script
         self.context = zmq.Context()
         self.insertSocket=self.context.socket(zmq.REQ)
         self.insertSocket.connect(f"tcp://{sys.argv[1]}:{serveUserPort}")
         print(getCurrMachineIp())
         print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
-        #self.insertSocket.setsockopt(zmq.RCVTIMEO, 150)
         self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
         for i in range (1,len (sys.argv)):            
             self.readSocket.connect(f"tcp://{sys.argv[i]}:{serveUserPort}")
@@ -91,10 +88,9 @@ class Client:
         while True:
             try:
                 #message will contain the password 
-                message=self.readSocket.recv_json()
-                dictMessage=json.loads(message)
-                print (dictMessage)
-                if dictMessage["Password"] == password:
+                message=self.readSocket.recv_string()
+                print("received as password ",message)
+                if message == password:
                     return generateToken(username, password)
                 return ""
             except zmq.ZMQError as e:
@@ -103,8 +99,6 @@ class Client:
                 #do nothing the client will  try to send to another DB    
     def handleSlaves(self):
         handleSlavesSocket=self.context.socket(zmq.SUB)
-        #print (sys.argv[1])
-        print("entered handleslaves")
         handleSlavesSocket.connect(f"tcp://{sys.argv[1]}:{updateClientsPort}")
         handleSlavesSocket.setsockopt_string(zmq.SUBSCRIBE, handleSlavesTopic)
         while True:
@@ -112,8 +106,6 @@ class Client:
             topic,message=receivedMessage.split("{")
             message="{"+message
             dictMessage=literal_eval(message)
-            #print(message)
-            #dictMessage=json.loads(message)
             address=dictMessage["address"]
             if dictMessage["command"]=="disconnect":
                 print(f"disconnecting from slave {address}")
@@ -128,10 +120,10 @@ class Client:
 
 if __name__=="__main__":
     name=input("Please enter your name")
-    email=input("Please enter your email")
+    #email=input("Please enter your email")
     password=input("Please enter your password")
     c=Client()
-    print(c.register(name,email,password))
+    print(c.authenticate(name,password),"+++++++++++++++++++++++++++")
     #c.delete(name)
     #print(c.Authenticate(name,password))
     while True:

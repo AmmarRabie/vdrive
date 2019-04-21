@@ -128,7 +128,8 @@ class Master:
                 self.toClientSocket.send_string("1")        
             elif messageDict["operation"]=="authenticate" :
                 result= self.mydb.retrieveUser(messageDict["Username"])  
-                self.toClientSocket.send_string(result["Password"])         
+                #print (result)
+                self.toClientSocket.send_string(result)         
 
 
 
