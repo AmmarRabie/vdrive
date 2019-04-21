@@ -114,11 +114,11 @@ class Master:
                                         self.slavesMissedData[key].append(message)
                                         break
                         else:
-                            print("appending data 2")
-
+                            print("appending data to slave with ip ",key)
                             self.slavesMissedData[key].append(message)             
                     self.toClientSocket.send_string("1")  
                 else:
+                    print("This username already exists in DB")
                     self.toClientSocket.send_string("0")
             elif messageDict["operation"]=="delete":
                 #delete from my database
@@ -148,7 +148,7 @@ class Master:
             #print ("connected!")
         
         
-        iamAliveSocket.setsockopt(zmq.RCVTIMEO, 30)
+        iamAliveSocket.setsockopt(zmq.RCVTIMEO, 1000)
         while(True):
             #try to receive from every slave im alive signal
             currentAliveSlaves=[]
@@ -187,12 +187,14 @@ class Master:
     def slaveRecoveryHandler(self,address):
         slaveRecoveryHandlerSocket=self.context.socket(zmq.REQ)
         slaveRecoveryHandlerSocket.connect(f"tcp://{address}:{slaveRecoveryHandlerPort}")
+        print("trying to send to the slave with ip",address,"the missed data",self.slavesMissedData[address])
         slaveRecoveryHandlerSocket.send_json(self.slavesMissedData[address])
-        
+        print("sent and trying to receive")
         #print(f"sending to slave{self.slavesMissedData[address]}")
         message=slaveRecoveryHandlerSocket.recv_string()
-        print (message)
+        print (message," received from the slave")
         if message=="1":
+            
             #successsfully updated the slave,send to all clients that the slave is alive now
             messageDict={
                             "command":"connect",
@@ -206,6 +208,7 @@ class Master:
 
 
     def disconnectSlave(self,address):
+        print("sending to client to disconnect from slave with address ",address)
         messageDict={
             "command":"disconnect",
             "address":address[0]
