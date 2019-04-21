@@ -98,11 +98,11 @@ class Master:
                         if self.alive[key]==True:
                             #try to send to the same slave while that slave is alive
                            
+                            print ("sending to slave" ,message)
+                            self.slavesSockets[key].send_json(message)
+                            print("sent")
                             while True:
                                 try:
-                                    print ("sending to slave" ,message)
-                                    self.slavesSockets[key].send_json(message)
-                                    print("sent")
                                     receivedMessage=self.slavesSockets[key].recv_string()
                                     print (receivedMessage+" from slave")                                    
                                     break
