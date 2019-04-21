@@ -3,8 +3,8 @@ import sys
 import zmq
 import pickle
 import zlib
-sys.path.append("../common")
-from util import writeVideo
+# sys.path.append("../common")
+from common.util import writeVideo
 
 
 class Downloader:
@@ -14,33 +14,31 @@ class Downloader:
     	self.trackerPort = trackerPort
 
 
-    def download_thread(self, ip, port, videoName, nodeIndex=6, totalNodes=6):
+    def download_thread(self, ip, port, token, videoName, nodeIndex=6, totalNodes=6):
     	#create socket
     	context = zmq.Context()
     	socket = context.socket(zmq.REQ)
     	socket.connect ("tcp://{}:{}".format(ip, port))
 
-    	#send the video name
-    	socket.send_string(videoName)
-
-    	#revieve ack
-    	ack = socket.recv_string()
-
-    	# video collected
-    	video = []
-
-    	#send total length and node index
-    	socket.send_string("{} {}".format(totalNodes, nodeIndex))
+		# send the metadata
+    	socket.send_json({
+			"function": "download",
+			"filename": videoName,
+			"token": token,
+			"config": f"{totalNodes} {nodeIndex}",
+		})
+    	# receive ack
+    	socket.recv_string()
 
     	#send to client number of chunks
     	numberOfChunks = int(socket.recv_string())
-
     	#send ACK
     	socket.send_string("ACK")
 
-    	#start downloading
-    	for i in range(numberOfChunks):
-    		#recieving current chunk
+    	# start downloading
+    	video = []
+    	for _ in range(numberOfChunks):
+    		#receiving current chunk
     		z = socket.recv_pyobj()
     		#p = zlib.decompress(z)
     		#s = pickle.loads(p)
@@ -56,17 +54,16 @@ class Downloader:
     	self.video[nodeIndex] = video
 
 
-    def getIPs(self, videoName):
-    	#create socket
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://{}:{}".format(self.trackerIP, self.trackerPort))
+    def getIPs(self, socket, token, videoName):
+    	#send download request
+        socket.send_json({
+			"token": token,
+			"function": "download",
+			"filename": videoName,
+		})
 
-    	#send file name
-        self.socket.send_string(videoName)
-
-        #send ports and ips
-        IP_Ports = self.socket.recv_pyobj()
+        # get ports and ips
+        IP_Ports = socket.recv_pyobj()
 
         return IP_Ports
 
@@ -74,9 +71,9 @@ class Downloader:
 
     # downloads a file from servers
     # ip_ports = [[ip, port], [ip, port], ...]
-    def download(self, videoName):
+    def download(self, socket, token, videoName):
     	#get ip_ports
-    	ip_ports = self.getIPs(videoName)
+    	ip_ports = self.getIPs(socket, token, videoName)
     	print(ip_ports)
 
     	#list for download threads
@@ -90,7 +87,8 @@ class Downloader:
 
     	#initialize threads
     	for i in range(numNodes):
-    		thread = Thread(target=self.download_thread(ip_ports[i][0], ip_ports[i][1], videoName, i, numNodes))
+    		args = ip_ports[i][0], ip_ports[i][1], token, videoName, i, numNodes
+    		thread = Thread(target=self.download_thread, args = args)
     		downloadThreads.append(thread)
 
     	# start threads

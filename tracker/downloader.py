@@ -1,6 +1,28 @@
-
-
+"""
+    send the port to the client
+    don't run this file alone
+"""
+import zmq
+import sys
+import pickle
+import zlib
+sys.path.append("../common")
+from util import readVideo
+import random
 
 
 class Downloader:
-    pass
+    def __init__(self, socket, db):
+        # set refs
+        self.socket = socket
+        self.db = db
+
+    def download(self):
+        # emptyProcesses = self.db.getEmptyPortsAllMachines() # TODO: use this line instead of hard coded response
+        emptyProcesses = ["127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000"]
+
+        # optimize: we can select the node with less files on that
+        datakeeperChosen = emptyProcesses[random.randint(0, len(emptyProcesses) - 1)]
+
+        # send the connection string
+        self.socket.send_string(datakeeperChosen)

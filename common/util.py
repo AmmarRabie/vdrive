@@ -29,7 +29,7 @@ def writeVideo(video, path):
 
 def getCurrMachineIp():
 	# TODO: remove the following line
-	return "127.0.0.1"
+	# return "127.0.0.1"
 	# import socket
 	s = pysocket.socket(pysocket.AF_INET, pysocket.SOCK_DGRAM)
 	try:
