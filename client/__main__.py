@@ -93,18 +93,19 @@ class Client(DbClint, FSClient):
     def authenticate(self, username, password):
         # override super class to update curr user
         self.token = DbClint.authenticate(self, username, password)
-        return not self.token
+        return self.token
     def register(self, username, password, email):
         self.token = DbClint.register(self, username, password, email)
-        return not self.token
+        print("token recieved from the database is", self.token)
+        return self.token
 
 if __name__ == "__main__":
     c1 = Client()
     # TODO: remove the hardcoded token, and un-comment the authentication loop
-    # valid = False
-    # while(not valid):
-    #     valid = c1.interactiveAuthUser()
-    c1.token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFtbWFyIiwicGFzcyI6ImFtbWFyIiwiZXhwIjoxNTkxNjU1MzEwfQ.KVmbYB4SivN72yaQTweQSeaG_KfsHWtCbB0oQodwjwY"
+    valid = False
+    while(not valid):
+        valid = c1.interactiveAuthUser()
+    # c1.token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFtbWFyIiwicGFzcyI6ImFtbWFyIiwiZXhwIjoxNTkxNjU1MzEwfQ.KVmbYB4SivN72yaQTweQSeaG_KfsHWtCbB0oQodwjwY"
     exit = False
     while(not exit):
         c1.interactiveUserFunction()

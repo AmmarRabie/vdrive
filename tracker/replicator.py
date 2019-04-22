@@ -37,9 +37,14 @@ class Replicator:
             print("handling file:", file)
 
             # instances = (sum(value["fileName"] == file["fileName"] for value in filesLocations))
+            # TODO: we don't need this function: we will get the number of instances from getting the len(src)
             instances = self.db.getInstancesOfFile(file["userID"],file["fileName"])
 
-            src = next(item for item in listOfNodes if item["nodeID"] == file["nodeID"])
+            src = next((item for item in listOfNodes if item["nodeID"] == file["nodeID"]), None)
+            # instances = len(src)
+            if not src:
+                print("OH MY GOD, this file can't be replicated as the whole src nodes are died")
+                continue
             requiredDestNum = MIN_REPLICATION - instances
             if (requiredDestNum <= 0):
                 continue

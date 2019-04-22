@@ -23,7 +23,8 @@ class DatabaseHandler:
         user=self.mydb.retrieveOne({"Username":usernameDict})
         return user["Password"]
     def deleteUser(self,usernameDict):
-        self.mydb.deleteOne(usernameDict)
+        print("database/databaseHandler in deleteUser", usernameDict)
+        self.mydb.deleteOne({"Username": usernameDict})
     def recoverDB(self,operationsArray):
         for stringOperation in operationsArray:
                 

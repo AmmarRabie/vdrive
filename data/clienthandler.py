@@ -24,7 +24,7 @@ def main(port):
         username = authenticate(downloadUploadSocket, request.get("token"))
         downloadUploadSocket.send_string("ACK")
         if not username:
-            downloadUploadSocket.send_string("INVALID TOKEN")
+            continue
         del request["token"]
         request["username"] = username
         if request.get("function") == "download":

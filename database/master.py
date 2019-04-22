@@ -30,7 +30,7 @@ from common.util import getCurrMachineIp
 from common.dbmanager import *
 from databaseHandler import *
 from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
-
+from common.util import decodeToken
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
 iamAliveTopic="12345"
@@ -116,8 +116,12 @@ class Master:
                     self.toClientSocket.send_string("0")
             elif messageDict["operation"]=="delete":
                 #delete from my database
+                username, _ = decodeToken(messageDict["token"])
+                if not username:
+                    self.toClientSocket.send_string("0")
+                    continue
                 
-                self.mydb.deleteUser({"Username":messageDict["Username"]})
+                self.mydb.deleteUser({"Username": username})
                 #send the message to all the alive slaves
                 toBeSent=updateSlavesTopic+' '+message
                 #self.toSlavesSocket.send_string(toBeSent)

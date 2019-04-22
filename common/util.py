@@ -2,7 +2,7 @@ import datetime
 import jwt
 from appconfig import TOKEN_SECRET
 import socket as pysocket
-
+import os
 def readVideo(path):
 	CHUNK_SIZE = 10000
 	file = open(path, "rb")
@@ -18,8 +18,10 @@ def readVideo(path):
 
 
 def writeVideo(video, path):
+	dirpath = os.path.dirname(path)
+	if (not os.path.isdir(dirpath)):
+		os.mkdir(dirpath)
 	file = open(path, "wb")
-
 	for item in video:
 		file.write(item)
 

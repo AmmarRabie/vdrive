@@ -19,6 +19,10 @@ class Uploader:
 
 
     def upload(self, metadata):
+        '''
+        metadata should have "username", "fileName" and "config" keys
+        config is "{numNodes} selfIndex"
+        '''
 
 		# unpack the metadata
         username, videoName, config = metadata.get("username"), metadata.get("fileName"), metadata.get("config")
@@ -51,6 +55,7 @@ class Uploader:
         #finish
         self.socket.send_string("Finish :D")
         print("Finish :D")
+
 
 
 if __name__ == '__main__':

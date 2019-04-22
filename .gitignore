@@ -1,6 +1,4 @@
 venv/
 __pycache__/
+*.pyc
 .vscode/
-test.py
-server.py
-client.py

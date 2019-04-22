@@ -63,15 +63,15 @@ class Client:
 
         
 
-    def delete(self,username):
+    def delete(self,token):
         #Assume that the user already signed in
         dictMessage={
-            "Username":username,
+            "token":token,
             "operation":"delete"
         }
         self.insertSocket.send_json(json.dumps(dictMessage))
         try:
-            message=self.insertSocket.recv()
+            message=self.insertSocket.recv_string()
             return message
         except zmq.ZMQError as e:
             if e.errno == zmq.EAGAIN:

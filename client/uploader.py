@@ -6,18 +6,20 @@ class Uploader:
     def __init__(self):
         pass
 
-    def upload(self, socket, token, filePath):
+    def upload(self, socket, token = None, filePath = "client/vtest.mp4"):
         ip, port = self.requestUpload(socket, token)
         print("your file will be uploaded to ", ip + ":" + port)
         uploadSocket = zhelper.newSocket(zmq.REQ, ip, (port,))
         data = readVideo(filePath)
         filename = filePath.split("/")[-1]
-        uploadSocket.send_json({
-            "token": token,
+        payload = {
             "function": "upload",
             "filename": filename,
             "numChunks": len(data),
-        })
+        }
+        if token:
+            payload["token"] = token
+        uploadSocket.send_json(payload)
         uploadSocket.recv()
         print("uploading start")
         for chunk in data:

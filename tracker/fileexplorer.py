@@ -14,7 +14,6 @@ class FileExplorer:
         if (not userId):
             print("WARNING: file explorer receives a not valid userId")
             return
-        # files = self.db.getUserFiles(userId)
-        filesNames = ("1.mp4", "miro.mp4", "45.mp4") # TODO: Get it from the database
-        print(f"files of the user {userId} will be sent, they are: {filesNames}")
+        filesNames = self.db.getUserFiles(userId)
+        print(f"tracker/FileExplorer: files of the user {userId} will be sent, they are: {filesNames}")
         self.socket.send_json({"files": filesNames})
