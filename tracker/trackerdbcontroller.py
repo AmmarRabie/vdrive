@@ -173,8 +173,6 @@ class TrackerDBController:
 		# TODO: implement this function
 		
 		return self.retrAllHaveAttrWithValue(["nodeIP","busy"],[None,False])
-		
-		pass
 
 	#add file to a node
 	def addFileToNode(self, userID, fileName, nodeIp):
@@ -183,7 +181,7 @@ class TrackerDBController:
 
 
 	#adds a new machine node to the system
-	def insertNode(self, nodeIp, IP , ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
+	def insertNode(self, nodeIp, ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
 		self.db.insertOne({"nodeIP": nodeIp, "numFiles": numFiles, "alive": alive})
 		
 		for port in ports:
@@ -194,7 +192,7 @@ class TrackerDBController:
 	#increment number of files on a node
 	def incFilesOnNode(self, nodeIp):
 		# self.db.incrementOne({"nodeID": nodeID}, {"numFiles": 1})
-		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive", "IP"],[nodeIp,None,True,None])
+		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive"],[nodeIp,None,True])
 		self.db.incrementOne({ "nodeIP": nodeIp, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True }, {"numFiles": 1})
 
 
@@ -202,3 +200,14 @@ class TrackerDBController:
 	def decFilesOnNode(self, nodeIp):
 		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive", "IP"],[nodeIp,None,True,None])
 		self.db.incrementOne({"nodeIP": nodeIp, "numFiles":int(desiredNode[0]["numFiles"]), "alive":True}, {"numFiles": -1})
+
+
+if __name__ == "__main__":
+	cont = TrackerDBController("TrackerDB")
+	# cont.insertNode("192.168.1.2")
+	# cont.insertNode("192.168.1.3")
+	# cont.insertNode("192.168.1.4")
+	# cont.addFileToNode(1, "1.mp4", "192.168.1.2")
+	# cont.addFileToNode(1, "1.mp4", "192.168.1.3")
+	# cont.addFileToNode(1, "1.mp4", "192.168.1.4")
+	print(cont.getPortsForDownload(1, "1.mp4"))
