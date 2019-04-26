@@ -61,7 +61,7 @@ class TrackerDBController:
 		#gets list of all empty ports on all machines 
 		emptyPortsOfAll = self.getEmptyPortsAllMachines()
 
-		print(emptyPortsOfAll)
+		# print(emptyPortsOfAll)
 
 		output = []
 
@@ -70,9 +70,13 @@ class TrackerDBController:
 		while i < len(emptyPortsOfAll):
 			ports = []
 			currentIP = emptyPortsOfAll[i]["nodeIP"]
+
 			while emptyPortsOfAll[i]["nodeIP"] in nodeIPs:
 				ports.append(emptyPortsOfAll[i]["port"])
 				i += 1
+				if(i == len(emptyPortsOfAll)):
+					break
+				
 			
 			if len(ports) == 0:
 				i += 1
