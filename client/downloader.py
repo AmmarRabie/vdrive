@@ -75,7 +75,7 @@ class Downloader:
     	#get ip_ports
     	ip_ports = self.getIPs(socket, token, videoName)
     	print(ip_ports)
-
+		#ip_ports = [["localhost", 7000], ["localhost", 7001], ["localhost", 7002], ["localhost", 7003], ["localhost", 7004]]
     	#list for download threads
     	downloadThreads = []
 
