@@ -97,7 +97,7 @@ class Client:
                 #do nothing the client will  try to send to another DB    
     def handleSlaves(self):
         handleSlavesSocket=self.context.socket(zmq.SUB)
-        handleSlavesSocket.connect(f"tcp://{sys.argv[1]}:{updateClientsPort}")
+        handleSlavesSocket.connect(f"tcp://{MASTER_IP}:{updateClientsPort}")
         handleSlavesSocket.setsockopt_string(zmq.SUBSCRIBE, handleSlavesTopic)
         while True:
             receivedMessage=handleSlavesSocket.recv_string()
@@ -117,9 +117,9 @@ class Client:
 
 
 if __name__=="__main__":
-    name=input("Please enter your name")
-    email=input("Please enter your email")
-    password=input("Please enter your password")
+    #name=input("Please enter your name")
+    #email=input("Please enter your email")
+    #password=input("Please enter your password")
     c=Client()
     #print(c.register(name,password,email),"+++++++++++++++++++++++++++")
     for i in range (0,10):
