@@ -19,22 +19,23 @@ class Downloader:
     	context = zmq.Context()
     	socket = context.socket(zmq.REQ)
     	socket.connect ("tcp://{}:{}".format(ip, port))
-
-		# send the metadata
+    
+    	# send the metadata
     	socket.send_json({
-			"function": "download",
-			"filename": videoName,
-			"token": token,
-			"config": f"{totalNodes} {nodeIndex}",
-		})
+    		"function": "download",
+    		"filename": videoName,
+    		"token": token,
+    		"config": f"{totalNodes} {nodeIndex}",
+    	})
     	# receive ack
     	socket.recv_string()
-
+    
     	#send to client number of chunks
+    	socket.send_string("GIVE ME THE CHUNKS")
     	numberOfChunks = int(socket.recv_string())
     	#send ACK
     	socket.send_string("ACK")
-
+    
     	# start downloading
     	video = []
     	for _ in range(numberOfChunks):
@@ -44,67 +45,67 @@ class Downloader:
     		#s = pickle.loads(p)
     		#print(type(s))
     		video.append(z)
-
+    
     		#send ack
     		socket.send_string("ACK")
-
+    
     	#finish
     	message = socket.recv_string()
     	print(message)
     	self.video[nodeIndex] = video
-
-
+    
+    
     def getIPs(self, socket, token, videoName):
     	#send download request
         socket.send_json({
-			"token": token,
-			"function": "download",
-			"filename": videoName,
-		})
-
+    		"token": token,
+    		"function": "download",
+    		"filename": videoName,
+    	})
+    
         # get ports and ips
         IP_Ports = socket.recv_pyobj()
-
-        return IP_Ports
-
     
-
+        return IP_Ports
+    
+    
+    
     # downloads a file from servers
     # ip_ports = [[ip, port], [ip, port], ...]
     def download(self, socket, token, videoName):
     	#get ip_ports
     	ip_ports = self.getIPs(socket, token, videoName)
     	print(ip_ports)
-		#ip_ports = [["localhost", 7000], ["localhost", 7001], ["localhost", 7002], ["localhost", 7003], ["localhost", 7004]]
+    	#ip_ports = [["localhost", 7000], ["localhost", 7001], ["localhost", 7002], ["localhost", 7003], ["localhost", 7004]]
     	#list for download threads
     	downloadThreads = []
-
+    
     	# get number of nodes
     	numNodes = len(ip_ports)
-
+    
     	#downloadedVideo
     	self.video = [None] * numNodes
-
+    
     	#initialize threads
     	for i in range(numNodes):
     		args = ip_ports[i][0], ip_ports[i][1], token, videoName, i, numNodes
     		thread = Thread(target=self.download_thread, args = args)
     		downloadThreads.append(thread)
-
+    
     	# start threads
     	for thread in downloadThreads:
     		thread.start()
-
+    
     	# join threads
     	for thread in downloadThreads:
     		thread.join()
-
+    
     	#create final video
     	finalVideo = []
     	for chunk in self.video:
     		for element in chunk:
     			finalVideo.append(element)
-
+    
     	return finalVideo
 
 
