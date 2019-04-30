@@ -17,20 +17,20 @@ from ast import literal_eval
 from common.util import generateToken
 from common.util import getCurrMachineIp
 handleSlavesTopic="9999"
-from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort,SLAVES_IPS,MASTER_IP
 
 class Client:
     def __init__(self):
         #at init establish the connection with the master and slaves script
         self.context = zmq.Context()
         self.insertSocket=self.context.socket(zmq.REQ)
-        self.insertSocket.connect(f"tcp://{sys.argv[1]}:{serveUserPort}")
+        self.insertSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
         print(getCurrMachineIp())
         print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
         self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
-        for i in range (1,len (sys.argv)):            
-            self.readSocket.connect(f"tcp://{sys.argv[i]}:{serveUserPort}")
+        for ip in SLAVES_IPS :            
+            self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()    
 
@@ -80,17 +80,15 @@ class Client:
     def authenticate(self,username,password):
         dictMessage={
             "Username":username,
+            "Password":password,
             "operation":"authenticate"
         }
         print("database/client: authenticate function dict", dictMessage)
         self.readSocket.send_json(json.dumps(dictMessage))
-        print("sending to master with ip"+sys.argv[1], serveUserPort)
         while True:
             try:
-                #message will contain the password 
                 message=self.readSocket.recv_string()
-                print("received as password ",message)
-                if message == password:
+                if message == "1":
                     return generateToken(username, password)
                 return ""
             except zmq.ZMQError as e:
@@ -120,10 +118,14 @@ class Client:
 
 if __name__=="__main__":
     name=input("Please enter your name")
-    #email=input("Please enter your email")
+    email=input("Please enter your email")
     password=input("Please enter your password")
     c=Client()
-    print(c.authenticate(name,password),"+++++++++++++++++++++++++++")
+    #print(c.register(name,password,email),"+++++++++++++++++++++++++++")
+    for i in range (0,10):
+        name=input("Please enter your name")
+        password=input("Please enter your password")
+        print(c.authenticate(name,password))
     #c.delete(name)
     #print(c.Authenticate(name,password))
     while True:

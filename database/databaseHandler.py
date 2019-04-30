@@ -6,8 +6,6 @@ from dbmanager import *
 class DatabaseHandler:
     def __init__(self,dbname):
         self.mydb=DBManager(dbname)
-
-
     def insertUser(self,UserDict):
         #check that the username is not taken
         usernameDict={
@@ -21,7 +19,7 @@ class DatabaseHandler:
             return False
     def retrieveUser(self,usernameDict):
         user=self.mydb.retrieveOne({"Username":usernameDict})
-        return user["Password"]
+        return user
     def deleteUser(self,usernameDict):
         print("database/databaseHandler in deleteUser", usernameDict)
         self.mydb.deleteOne({"Username": usernameDict})

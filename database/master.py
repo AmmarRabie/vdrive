@@ -29,7 +29,7 @@ sys.path.append("../")
 from common.util import getCurrMachineIp
 from common.dbmanager import *
 from databaseHandler import *
-from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort,SLAVES_IPS,MASTER_IP
 from common.util import decodeToken
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
@@ -43,18 +43,14 @@ class Master:
         self.slavesMissedData={}
         self.mydb = DatabaseHandler("usersDatabase")
         self.slavesSockets={}
-        #self.slavesIPs=[]
         self.alive={}
         self.context=zmq.Context()
-        for i in range (1,len(sys.argv)):
-            #toClientiamAliveSockets[i].bind(f"tcp://{SERVER_IP}:{sys.argv[1]}")
-            # self.slavesIPs.append(sys.argv[i])
-            #self.alive.append(true)
-            self.alive[sys.argv[i]]=True
-            self.slavesMissedData[sys.argv[i]]=[]
-            self.slavesSockets[sys.argv[i]]=(self.context.socket(zmq.REQ))
-            self.slavesSockets[sys.argv[i]].connect(f"tcp://{sys.argv[i]}:{updateSlavesPort}")
-            self.slavesSockets[sys.argv[i]].setsockopt(zmq.RCVTIMEO, 50)
+        for ip in SLAVES_IPS:
+            self.alive[ip]=True
+            self.slavesMissedData[ip]=[]
+            self.slavesSockets[ip]=(self.context.socket(zmq.REQ))
+            self.slavesSockets[ip].connect(f"tcp://{ip}:{updateSlavesPort}")
+            self.slavesSockets[ip].setsockopt(zmq.RCVTIMEO, 50)
 
         self.toClientSocket=self.context.socket(zmq.REP)
         self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
@@ -81,36 +77,11 @@ class Master:
                     "Password":messageDict["Password"],
                     "Email":messageDict["Email"]
                 }
-
                 result=self.mydb.insertUser(userDict)
-                print(result," result+++++++++")
                 if result==True:
-                    #insertion is successful update the slaves
-                    #toBeSent=updateSlavesTopic+' '+message
                     print(self.slavesSockets,self.alive)
-                    for key in self.slavesSockets.keys():
-                        if self.alive[key]==True:
-                            #try to send to the same slave while that slave is alive
-                           
-                            print ("sending to slave" ,message)
-                            self.slavesSockets[key].send_json(message)
-                            print("sent")
-                            while True:
-                                try:
-                                    receivedMessage=self.slavesSockets[key].recv_string()
-                                    print (receivedMessage+" from slave")                                    
-                                    break
-                                except zmq.ZMQError as e :
-                                    print("couldn't receive from ",key,"with error",e)
-                                    print ("this slave",self.alive[key])
-                                    if self.alive[key]==False:
-                                        print("appending data",message)
-                                        self.slavesMissedData[key].append(message)
-                                        break
-                        else:
-                            print("appending data to slave with ip ",key)
-                            self.slavesMissedData[key].append(message)             
-                    self.toClientSocket.send_string("1")  
+                    self.informSlaves(message)
+                    self.toClientSocket.send_string("1")
                 else:
                     print("This username already exists in DB")
                     self.toClientSocket.send_string("0")
@@ -120,24 +91,44 @@ class Master:
                 if not username:
                     self.toClientSocket.send_string("0")
                     continue
-                
                 self.mydb.deleteUser({"Username": username})
                 #send the message to all the alive slaves
-                toBeSent=updateSlavesTopic+' '+message
-                #self.toSlavesSocket.send_string(toBeSent)
                 #store the query for all the dead slaves
-                for key,value in self.alive.items():
-                    if value==False:
-                        self.slavesMissedData[key].append(message)
+                self.informSlaves(message)
                 self.toClientSocket.send_string("1")        
             elif messageDict["operation"]=="authenticate" :
-                result= self.mydb.retrieveUser(messageDict["Username"])  
-                #print (result)
-                self.toClientSocket.send_string(result)         
+                print("[run] received from client ",message)
+                User= self.mydb.retrieveUser(messageDict["Username"])  
+                if User==None:
+                    self.toClientSocket.send_string("0")                        
+                elif User["Username"]==messageDict["Username"]:
+                    self.toClientSocket.send_string("1")
+                else:
+                    self.toClientSocket.send_string("0")    
 
 
-
-                            
+    def informSlaves(self,operation):
+        for key in self.slavesSockets.keys():
+            if self.alive[key]==True:
+                #try to send to the same slave while that slave is alive
+                print ("sending to slave" ,operation)
+                self.slavesSockets[key].send_json(operation)
+                print("sent")
+                while True:
+                    try:
+                        receivedMessage=self.slavesSockets[key].recv_string()
+                        break
+                    except zmq.ZMQError as e :
+                        print("couldn't receive from ",key,"with error",e)
+                        if self.alive[key]==False:
+                            print("appending data",operation)
+                            self.slavesMissedData[key].append(operation)
+                            break
+            else:
+                print("appending data to slave with ip ",key)
+                self.slavesMissedData[key].append(operation)             
+        return  
+                    
     def handleSlaves(self):
         iamAliveSocket=self.context.socket(zmq.SUB)
         iamAliveSocket.setsockopt_string(zmq.SUBSCRIBE, iamAliveTopic)
