@@ -19,7 +19,7 @@ TRACKER_ALIVE_PORT = "7500"
 DATA_KEEPER_ALIVE_SEND_RATE = 1 # send every one second
 DATA_KEEPER_TIME_OUT = DATA_KEEPER_ALIVE_SEND_RATE + 1 # one second more, depends on the network traffic
 
-KEEPERS_TO_KEEPERS_REPL_PORTS = ("9000", "9001") # keepers to keepers reqrep ports for replication process, we are now handle at maximum two at once
+KEEPERS_TO_KEEPERS_REPL_PORT = "9000" # keepers to keepers reqrep port for replication process, we are now handle at maximum two at once
 
 
 # database config
