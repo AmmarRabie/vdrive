@@ -20,7 +20,7 @@ sys.path.append('../')
 from common.util import *
 from common.dbmanager import *
 from databaseHandler import *
-from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort,MASTER_IP
 
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"

@@ -29,7 +29,7 @@ sys.path.append("../")
 from common.util import getCurrMachineIp
 from common.dbmanager import *
 from databaseHandler import *
-from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort
+from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort,SLAVES_IPS,MASTER_IP
 from common.util import decodeToken
 updateSlavesTopic="55555"
 handleSlavesTopic="9999"
@@ -43,18 +43,14 @@ class Master:
         self.slavesMissedData={}
         self.mydb = DatabaseHandler("usersDatabase")
         self.slavesSockets={}
-        #self.slavesIPs=[]
         self.alive={}
         self.context=zmq.Context()
-        for i in range (1,len(sys.argv)):
-            #toClientiamAliveSockets[i].bind(f"tcp://{SERVER_IP}:{sys.argv[1]}")
-            # self.slavesIPs.append(sys.argv[i])
-            #self.alive.append(true)
-            self.alive[sys.argv[i]]=True
-            self.slavesMissedData[sys.argv[i]]=[]
-            self.slavesSockets[sys.argv[i]]=(self.context.socket(zmq.REQ))
-            self.slavesSockets[sys.argv[i]].connect(f"tcp://{sys.argv[i]}:{updateSlavesPort}")
-            self.slavesSockets[sys.argv[i]].setsockopt(zmq.RCVTIMEO, 50)
+        for ip in SLAVES_IPS:
+            self.alive[ip]=True
+            self.slavesMissedData[ip]=[]
+            self.slavesSockets[ip]=(self.context.socket(zmq.REQ))
+            self.slavesSockets[ip].connect(f"tcp://{ip}:{updateSlavesPort}")
+            self.slavesSockets[ip].setsockopt(zmq.RCVTIMEO, 50)
 
         self.toClientSocket=self.context.socket(zmq.REP)
         self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
@@ -103,7 +99,9 @@ class Master:
             elif messageDict["operation"]=="authenticate" :
                 print("[run] received from client ",message)
                 User= self.mydb.retrieveUser(messageDict["Username"])  
-                if User["Username"]==messageDict["Username"]:
+                if User==None:
+                    self.toClientSocket.send_string("0")                        
+                elif User["Username"]==messageDict["Username"]:
                     self.toClientSocket.send_string("1")
                 else:
                     self.toClientSocket.send_string("0")    
