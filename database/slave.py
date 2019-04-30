@@ -33,7 +33,7 @@ class Slave:
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
+        self.toClientSocket.bind(f"tcp://*:{serveUserPort-1}")
         
         self.toMasterSocket=self.context.socket(zmq.REP)
         self.toMasterSocket.bind(f"tcp://*:{updateSlavesPort}")
@@ -60,19 +60,15 @@ class Slave:
         #this method will run in the main thread it will be responsible for receiving requests from the user
         while True:
             message=self.toClientSocket.recv_json()
-            print ("receivedddddddddddddddddddddddddddddddd")
+            print ("[run] received from client",message)
             messageDict=json.loads(message)
-            toDbDict={
-                "Username":messageDict["Username"]
-            }    
-            result=self.mydb.retrieveOne(toDbDict)
+            User=self.mydb.retrieveUser({"Username":messageDict["Username"]})
+            if User["Password"]==messageDict["Password"]:
+                self.toClientSocket.send_string("1")
+            else:
+                self.toClientSocket.send_string("0")    
 
-            #print(result)
-            toBeSent={
-                "Password":result["Password"]
-            }
-            self.toClientSocket.send_json(json.dumps(toBeSent))
-
+            
     def sendIamAlive(self):
         while True:
             #print ("sending my ip")
@@ -84,12 +80,8 @@ class Slave:
     def updateDB(self):
         while True:
             message=self.toMasterSocket.recv_json()
-            print (message)
-            print("received from master++++++++++++++++++++++++++")
+            print("[UpdateDB] received from master ",message)
             messageDict=json.loads(message)
-            #messageString="{"+messageString
-            #messageDict=literal_eval(messageString)
-            #messageDict=json.loads(message)
             if messageDict["operation"]=="insert":
 
                 toBeAdded={

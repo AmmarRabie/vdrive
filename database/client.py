@@ -80,17 +80,16 @@ class Client:
     def authenticate(self,username,password):
         dictMessage={
             "Username":username,
+            "Password":password,
             "operation":"authenticate"
         }
         print("database/client: authenticate function dict", dictMessage)
         self.readSocket.send_json(json.dumps(dictMessage))
-        print("sending to master with ip"+sys.argv[1], serveUserPort)
         while True:
             try:
-                #message will contain the password 
                 message=self.readSocket.recv_string()
                 print("received as password ",message)
-                if message == password:
+                if message == "1":
                     return generateToken(username, password)
                 return ""
             except zmq.ZMQError as e:
@@ -120,10 +119,14 @@ class Client:
 
 if __name__=="__main__":
     name=input("Please enter your name")
-    #email=input("Please enter your email")
+    email=input("Please enter your email")
     password=input("Please enter your password")
     c=Client()
-    print(c.authenticate(name,password),"+++++++++++++++++++++++++++")
+    #print(c.register(name,password,email),"+++++++++++++++++++++++++++")
+    for i in range (0,10):
+        name=input("Please enter your name")
+        password=input("Please enter your password")
+        print(c.authenticate(name,password))
     #c.delete(name)
     #print(c.Authenticate(name,password))
     while True:
