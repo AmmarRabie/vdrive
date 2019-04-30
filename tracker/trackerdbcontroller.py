@@ -71,7 +71,7 @@ class TrackerDBController:
 			ports = []
 			currentIP = emptyPortsOfAll[i]["nodeIP"]
 
-			while emptyPortsOfAll[i]["nodeIP"] in nodeIPs:
+			while emptyPortsOfAll[i]["nodeIP"] in nodeIPs and emptyPortsOfAll[i]["nodeIP"] == currentIP:
 				ports.append(emptyPortsOfAll[i]["port"])
 				i += 1
 				if(i == len(emptyPortsOfAll)):
