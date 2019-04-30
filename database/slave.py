@@ -29,11 +29,11 @@ iamAliveTopic="12345"
 
 class Slave:
     def __init__ (self):
-        self.mydb = DatabaseHandler("usersDatabaseSlave1")
+        self.mydb = DatabaseHandler("usersDatabaseSlave")
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
-        self.toClientSocket.bind(f"tcp://*:{serveUserPort-1}")
+        self.toClientSocket.bind(f"tcp://*:{serveUserPort}")
         
         self.toMasterSocket=self.context.socket(zmq.REP)
         self.toMasterSocket.bind(f"tcp://*:{updateSlavesPort}")

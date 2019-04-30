@@ -2,6 +2,7 @@ import zmq
 from common.zmqHelper import zhelper
 from appconfig import *
 from common.util import readVideo
+import progressbar
 class Uploader:
     def __init__(self):
         pass
@@ -22,10 +23,14 @@ class Uploader:
         uploadSocket.send_json(payload)
         uploadSocket.recv()
         print("uploading start")
-        for chunk in data:
-            #? may want to send the token here also, network overhead
-            uploadSocket.send(chunk)
-            uploadSocket.recv()
+        with progressbar.ProgressBar(max_value=len(data)) as bar:
+            for i in range(len(data)):
+                #? may want to send the token here also, network overhead
+                uploadSocket.send(data[i])
+                uploadSocket.recv()
+
+                #update progress bar
+                bar.update(i)
 
     def requestUpload(self, trackerSocket, token):
         #send upload request

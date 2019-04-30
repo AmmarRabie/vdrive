@@ -18,8 +18,11 @@ class Downloader:
         self.db = db
 
     def download(self):
-        # emptyProcesses = self.db.getEmptyPortsAllMachines() # TODO: use this line instead of hard coded response
-        emptyProcesses = ["127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000"]
+        emptyProcessesDB = self.db.getEmptyPortsAllMachines() # TODO: use this line instead of hard coded response
+        # emptyProcesses = ["127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000"]
+        emptyProcesses = []
+        for process in emptyProcessesDB:
+            emptyProcesses.append(f"{process['nodeIP']}:{process['port']}")
 
         # optimize: we can select the node with less files on that
         datakeeperChosen = emptyProcesses[random.randint(0, len(emptyProcesses) - 1)]
