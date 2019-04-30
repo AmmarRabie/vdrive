@@ -130,6 +130,7 @@ class TrackerDBController:
 		self.db.insertOne({"userID": userID, "fileName": fileName , "nodeIP":nodeIp})
 		#get node that file is inserted to
 		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive"],[nodeIp,None,True])
+		print(desiredNode, userID, fileName, nodeIp)
 		#increment number of files this node has
 		self.db.incrementOne({ "nodeIP": desiredNode[0]["nodeIP"], "numFiles":int(desiredNode[0]["numFiles"]), "alive":True }, {"numFiles": 1})
 
@@ -149,7 +150,8 @@ class TrackerDBController:
 			print("Cannot Update State error in parameters")
 			return False
 		
-		self.db.updateOne({"nodeIP" : int(desiredNode[0]["nodeIP"]) ,"port" : nodePort}, {"busy": isBusy})
+		# self.db.updateOne({"nodeIP" : int(desiredNode[0]["nodeIP"]) ,"port" : nodePort}, {"busy": isBusy})
+		self.db.updateOne({"nodeIP" : desiredNode[0]["nodeIP"] ,"port" : nodePort}, {"busy": isBusy})
 		return True
 
 	def updateNodesAliveStates(self, isAliveStates):

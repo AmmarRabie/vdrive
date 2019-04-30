@@ -11,7 +11,7 @@ TRACKER_PORTS_KEEPERS = ("8000",) # ports that data keepers communicate with
 KEEPERS_PORTS_TRACKERS = ("8500",) # ports that trackers that communicate with
 #? assume that every machine have the same ports
 DATA_KEEPER_IPS = ("127.0.0.1", "localhost")
-DATA_KEEPER_PORTS = ("6000", "6001") # for each data keeper machine there is a list of propably available ports
+DATA_KEEPER_PORTS = ("6000", "6001", "6002", "6003", "6004", "6005", "6006", "6007", "6008", "6009" ) # for each data keeper machine there is a list of propably available ports
 TRACKER_TO_KEEPERS_PORTS = ("6500",) # ports that tracker communicate with data keeper to till it that there is a replication required
 
 TRACKER_ALIVE_PORT = "7500"

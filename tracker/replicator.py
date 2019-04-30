@@ -15,15 +15,6 @@ class Replicator:
 
     def __init__(self, dbname="TrackerDB"):
         self.db = TrackerDBController(dbname)
-        # self.db.insertNode(100,"192.168.1.1")
-        # self.db.insertNode(110,"192.168.1.2")
-        # self.db.insertNode(120,"192.168.1.3")
-
-        # self.db.insertFile("mai","1.mp4",100)
-        # self.db.insertFile("mai","2.mp4",100)
-        # self.db.insertFile("aya","5.mp4",100)
-        # self.db.insertFile("aya","6.mp4",100)
-        # self.db.insertFile("mai","6.mp4",100)
 
     def replicator_process(self):       
         listOfFiles = self.db.listAllFilesAllUsers()

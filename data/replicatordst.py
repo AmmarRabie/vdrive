@@ -68,9 +68,7 @@ def main(port):
         #? TODO: should we sleep here
 
 if __name__ == "__main__":
-    import sys
-    from appconfig import TRACKER_TO_KEEPERS_PORTS
-    port = KEEPERS_TO_KEEPERS_PORTS[0]
+    from appconfig import KEEPERS_TO_KEEPERS_REPL_PORT as port
     if len(sys.argv) >= 2:
         port = sys.argv[1]
     main(port)

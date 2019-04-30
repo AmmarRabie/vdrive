@@ -17,7 +17,7 @@ def main(port):
     trackerSocket = zhelper.newSocket(zmq.REQ, TRACKER_IP, TRACKER_PORTS_KEEPERS)
     downloadUploadSocket = zhelper.newServerSocket(zmq.REP, getCurrMachineIp(), port)
     downloader = Downloader(downloadUploadSocket, trackerSocket, port)
-    uploader = Uploader(downloadUploadSocket, trackerSocket)
+    uploader = Uploader(downloadUploadSocket, trackerSocket, port)
     while True:
         request = downloadUploadSocket.recv_json()
         print("request received:", request)

@@ -4,7 +4,7 @@ from threading import Thread
 from common.zmqHelper import zhelper
 from common.util import readVideo
 import zmq
-from appconfig import KEEPERS_TO_KEEPERS_REPL_PORTS as KEEPERS_TO_KEEPERS_PORTS, TRACKER_IP, TRACKER_PORTS
+from appconfig import KEEPERS_TO_KEEPERS_REPL_PORT as KEEPERS_TO_KEEPERS_PORT, TRACKER_IP, TRACKER_PORTS
 class ReplicatorSrc:
     def __init__(self, port):
         # self.trackerSocket = zhelper.newSocket()
@@ -14,20 +14,18 @@ class ReplicatorSrc:
         request = self.mysocket.recv_json()
         self.file, destinations = request.get("file"), request.get("dests")
         threads = []
-        if(len(KEEPERS_TO_KEEPERS_PORTS) < len(destinations)):
-            raise Exception("un-available state, do you forget to incremet number of KEEPERS_TO_KEEPERS_REPL_PORTS in appconfig ?")
-        for i, dest in enumerate(destinations):
-            t = Thread(target=self.replicate, args=(dest,i))
+        for dest in destinations:
+            t = Thread(target=self.replicate, args=(dest,))
             threads.append(t)
             t.start()
         for t in threads:
             t.join()
         self.mysocket.send_string("ACK") # ACK to the replicator process in the tracker to continue processing
 
-    def replicate(self, dest, index):
+    def replicate(self, dest):
         f = self.file
         print(f, dest)
-        port = KEEPERS_TO_KEEPERS_PORTS[index]
+        port = KEEPERS_TO_KEEPERS_PORT
         keeperSocket = zhelper.newSocket(zmq.REQ, dest["nodeIP"], (port,))
         uploader = Uploader()
         uploader.upload(keeperSocket, f["userID"], f["fileName"])
@@ -38,7 +36,7 @@ class Uploader:
     def __init__(self):
         pass
 
-    def upload(self, socket, username, filePath = "client/vtest.mp4"):
+    def upload(self, socket, username, filePath):
         data = readVideo(filePath)
         filename = filePath.split("/")[-1]
         payload = {
