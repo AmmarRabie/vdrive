@@ -4,6 +4,7 @@ from threading import Thread
 from common.zmqHelper import zhelper
 from common.util import readVideo
 import zmq
+import progressbar
 from appconfig import KEEPERS_TO_KEEPERS_REPL_PORT as KEEPERS_TO_KEEPERS_PORT, TRACKER_IP, TRACKER_PORTS
 class ReplicatorSrc:
     def __init__(self, port):
@@ -50,9 +51,11 @@ class Uploader:
         socket.send_json(payload)
         socket.recv()
         print("uploading start")
-        for chunk in data:
-            socket.send(chunk)
-            socket.recv()
+        with progressbar.ProgressBar(max_value=len(data)) as bar:
+            for i in range(len(data)):
+                socket.send(data[i])
+                socket.recv()
+                bar.update(i)
 
 def main(port):
     replicator = ReplicatorSrc(port)

@@ -40,7 +40,7 @@ class Downloader:
 
 		#starting download
 		video = []
-		with progressbar.ProgressBar(max_value=numberOfChunks, widgets=[progressbar.Bar(marker='█')]) as bar:
+		with progressbar.ProgressBar(max_value=numberOfChunks) as bar:
 			for i in range(numberOfChunks):
 				#receiving current chunk
 				z = socket.recv_pyobj()
