@@ -50,7 +50,8 @@ class TrackerDBController:
 		quereyOutput = self.retrAllHaveAttrWithValue(["userID","fileName"],[userID,fileName])
 		nodeIPs = []
 		for record in quereyOutput:
-			nodeIPs.append(record["nodeIP"])
+			if self.isNodeAlive(record["nodeIP"]):
+				nodeIPs.append(record["nodeIP"])
 
 		return nodeIPs
 
