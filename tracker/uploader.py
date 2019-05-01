@@ -20,8 +20,6 @@ class Uploader:
 
 
     def upload(self, fileName, userId):
-
-        # TODO: implement the logic of getting ips-ports to include the busy strategy
         #get nodes containing the file
         nodes = self.db.getPortsForDownload(userId, fileName)
 

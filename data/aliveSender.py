@@ -9,7 +9,6 @@ from appconfig import TRACKER_ALIVE_PORT as ALIVE_PORT, DATA_KEEPER_ALIVE_SEND_R
 class AliveSender:
     def __init__(self):
         self.ip = getCurrMachineIp()
-        self.ip = "127.0.0.1" # TODO: remove this line
         self.socket = zhelper.newServerSocket(zmq.PUB, self.ip, ALIVE_PORT)
 
     def update(self):

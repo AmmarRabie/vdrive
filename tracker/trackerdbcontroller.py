@@ -164,7 +164,7 @@ class TrackerDBController:
 		# TODO: implement this function
 		for ip, state in isAliveStates.items():
 			# self.db.retrieveAllWithAttrWithValue(["nodeID", "numFiles", "alive", "IP"],[None, None,None,None])
-			self.db.updateOne(  {"nodeIP":  ip}, {"alive": state})
+			self.db.updateOne(  {"nodeIP":  ip, "port": "-1"}, {"alive": state})
 
 		pass
 
@@ -188,7 +188,7 @@ class TrackerDBController:
 
 	#adds a new machine node to the system
 	def insertNode(self, nodeIp, ports=[6666,6667,6668,6669,6670,6671,6672,6673,6674,6675], numFiles=0, alive=True):
-		self.db.insertOne({"nodeIP": nodeIp, "numFiles": numFiles, "alive": alive})
+		self.db.insertOne({"nodeIP": nodeIp,"port": "-1", "numFiles": numFiles, "alive": alive})
 		
 		for port in ports:
 			self.db.insertOne({"nodeIP": nodeIp, "port":port , "busy":False})
