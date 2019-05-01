@@ -46,7 +46,7 @@ class Client:
             "operation":"insert"
         }
         print("sending to master with ip")
-        print(sys.argv[1])
+        #   print(sys.argv[1])
         print(serveUserPort)       
         self.insertSocket.send_json(json.dumps(dictMessage))
         print("sent")
