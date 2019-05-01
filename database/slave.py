@@ -89,7 +89,7 @@ class Slave:
                     "Email":messageDict["Email"]
                 }
                 self.mydb.insertUser(toBeAdded)
-            else:
+            elif messageDict["operation"] == "delete":
                 toBeDeleted={
                     "Username":messageDict["Username"]
                 }    
