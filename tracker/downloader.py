@@ -33,10 +33,16 @@ class Downloader:
                 emptyProcesses.append(f"{process['nodeIP']}:{process['port']}")
 
         # optimize: we can select the node with less files on that
+        print(f"we have {len(emptyProcesses)} available for download")
+        if (not emptyProcesses):
+            self.socket.send_json({"err": "no available ports"}) # TODO: handle this from the client
+            self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
+            return
         datakeeperChosen = emptyProcesses[random.randint(0, len(emptyProcesses) - 1)]
 
         #set busy
-        self.db.setNodeBusyState(datakeeperChosen["nodeIP"], datakeeperChosen["port"], True)
+        ip, port = datakeeperChosen.split(":")
+        self.db.setNodeBusyState(ip, port, True)
 
         # free atomic
         self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
