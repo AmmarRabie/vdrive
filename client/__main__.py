@@ -80,11 +80,11 @@ class Client(DbClint, FSClient):
             name = "listFiles"
         elif function == "2":
             name = "downloadFile"
-            fileName = input("what is the file name")
+            fileName = input("what is the file name ")
             kwargs = dict(fileName = fileName)
         elif function == "3":
             name = "uploadLocalFile"
-            filePath = input("what is the file path")
+            filePath = input("what is the file path ")
             kwargs = dict(filePath = filePath)
         elif function == "4":
             name = "delete"

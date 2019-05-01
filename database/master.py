@@ -87,14 +87,15 @@ class Master:
                     self.toClientSocket.send_string("0")
             elif messageDict["operation"]=="delete":
                 #delete from my database
-                username, _ = decodeToken(messageDict["token"])
+                username, _ = decodeToken(messageDict["token"])[0]
                 if not username:
                     self.toClientSocket.send_string("0")
                     continue
+                print(f"deleting username {username}")
                 self.mydb.deleteUser({"Username": username})
                 #send the message to all the alive slaves
                 #store the query for all the dead slaves
-                self.informSlaves(message)
+                self.informSlaves({"Username": username})
                 self.toClientSocket.send_string("1")        
             elif messageDict["operation"]=="authenticate" :
                 print("[run] received from client ",message)
