@@ -101,7 +101,7 @@ class Master:
                 User= self.mydb.retrieveUser(messageDict["Username"])  
                 if User==None:
                     self.toClientSocket.send_string("0")                        
-                elif User["Username"]==messageDict["Username"]:
+                elif User["Username"]==messageDict["Username"] and User["Password"] == messageDict["Password"]:
                     self.toClientSocket.send_string("1")
                 else:
                     self.toClientSocket.send_string("0")    

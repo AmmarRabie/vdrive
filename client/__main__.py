@@ -32,6 +32,7 @@ class Client(DbClint, FSClient):
             username = input("username: ")
             password = input("password: ")
             isValidUser = self.authenticate(username, password)
+            print(isValidUser)
             while (not isValidUser):
                 print("invalid user")
                 tryAgain = input("try again ?y/n").upper()
@@ -39,6 +40,7 @@ class Client(DbClint, FSClient):
                     username = input("username: ")
                     password = input("password: ")
                     isValidUser = self.authenticate(username, password)
+                    print("invalid user", isValidUser)
                 else:
                     return False
             return True

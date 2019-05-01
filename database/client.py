@@ -28,7 +28,8 @@ class Client:
         print(getCurrMachineIp())
         print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
-        self.readSocket.setsockopt(zmq.RCVTIMEO, 150)
+        # self.readSocket.setsockopt(zmq.RCVTIMEO, 150)   
+        self.readSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
         for ip in SLAVES_IPS :            
             self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")
         thread = threading.Thread(target=self.handleSlaves, args=())
@@ -77,6 +78,8 @@ class Client:
             if e.errno == zmq.EAGAIN:
                 #Master is dead!
                 return -1
+
+
     def authenticate(self,username,password):
         dictMessage={
             "Username":username,
@@ -88,13 +91,15 @@ class Client:
         while True:
             try:
                 message=self.readSocket.recv_string()
+                print("message")
                 if message == "1":
                     return generateToken(username, password)
                 return ""
             except zmq.ZMQError as e:
                 print("couldn't receive")
                 pass
-                #do nothing the client will  try to send to another DB    
+                #do nothing the client will  try to send to another DB
+
     def handleSlaves(self):
         handleSlavesSocket=self.context.socket(zmq.SUB)
         handleSlavesSocket.connect(f"tcp://{MASTER_IP}:{updateClientsPort}")
