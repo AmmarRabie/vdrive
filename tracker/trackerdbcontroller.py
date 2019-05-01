@@ -41,7 +41,7 @@ class TrackerDBController:
 		return aliveNodes
 
 	def isFileOnNode(self, fileName, nodeIP, userName):
-		return self.db.retrieveOne({{"fileName": fileName}, {"nodeIP": nodeIP}, {"userID": userName}})
+		return self.db.retrieveOne({"fileName": fileName, "nodeIP": nodeIP, "userID": userName})
 
 	# Function takes file info and gets list of nodes' ip that holds this file
 	# returns list of node's ip [100,200,300]

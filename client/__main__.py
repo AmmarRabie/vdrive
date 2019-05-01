@@ -66,7 +66,6 @@ class Client(DbClint, FSClient):
         """
             get user action, now just get it from command line interacting
         """
-        print("_getUserFunction") # TODO: remove this line
         mes = \
         """Please choose one of the functions below, just enter the number of it
         1) show me my files
@@ -103,11 +102,9 @@ class Client(DbClint, FSClient):
 
 if __name__ == "__main__":
     c1 = Client()
-    # TODO: remove the hardcoded token, and un-comment the authentication loop
     valid = False
     while(not valid):
         valid = c1.interactiveAuthUser()
-    # c1.token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFtbWFyIiwicGFzcyI6ImFtbWFyIiwiZXhwIjoxNTkxNjU1MzEwfQ.KVmbYB4SivN72yaQTweQSeaG_KfsHWtCbB0oQodwjwY"
     exit = False
     while(not exit):
         c1.interactiveUserFunction()

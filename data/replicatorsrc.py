@@ -20,6 +20,7 @@ class ReplicatorSrc:
             t.start()
         for t in threads:
             t.join()
+        print("sending to the tracker to continue replication")
         self.mysocket.send_string("ACK") # ACK to the replicator process in the tracker to continue processing
 
     def replicate(self, dest):
@@ -32,13 +33,14 @@ class ReplicatorSrc:
 
 
 # OPTIMIZE TODO: remove this class and add the a general uploader in the common dir that can do client and replicator uploader 
+# OPTIMIZE TODO: read the file only one before opening the threads
+
 class Uploader:
     def __init__(self):
         pass
 
-    def upload(self, socket, username, filePath):
-        data = readVideo(filePath)
-        filename = filePath.split("/")[-1]
+    def upload(self, socket, username, filename):
+        data = readVideo(f"{username}/{filename}")
         payload = {
             "function": "upload",
             "username": username,
