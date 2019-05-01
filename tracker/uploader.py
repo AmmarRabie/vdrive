@@ -22,9 +22,10 @@ class Uploader:
     def upload(self, fileName, userId):
 
         # make function atomic
-        inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+        inUse = self.db.db.findAndUpdate({"atomic": "atomic"}, {"inUse": True})["inUse"]
+        print("inUse", inUse)
         while inUse:
-            inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+            inUse = self.db.db.findAndUpdate({"atomic": "atomic"}, {"inUse": True})["inUse"]
 
         # get nodes containing the file
         nodes = self.db.getPortsForDownload(userId, fileName)
@@ -56,7 +57,7 @@ class Uploader:
             IP_Ports = []
 
         # free atomic
-        self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})["inUse"]
+        self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
 
         # send ports and ips
         self.socket.send_pyobj(IP_Ports[:self.numPorts])

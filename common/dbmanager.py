@@ -65,7 +65,10 @@ class DBManager:
 	#key and update will be like
 	# {"key": value}
 	def updateOne(self, key, update):
-		return self.db.my_collection.update_one(key, { '$set':update}, upsert=True)
+		self.db.my_collection.update_one(key, { '$set':update}, upsert=True).raw_result
+
+	def findAndUpdate(self, key, update):
+		return self.db.my_collection.find_one_and_update(key, { '$set':update}, upsert=True)
 
 
 	#increments a value with a specefic number
@@ -73,7 +76,7 @@ class DBManager:
 	# then x will be incremented by 2
 	def incrementOne(self, key, update):
 		self.db.my_collection.update_one(key, { '$inc':update}, upsert=True)
-
+	
 
 
 
