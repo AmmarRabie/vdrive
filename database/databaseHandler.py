@@ -22,7 +22,7 @@ class DatabaseHandler:
         return user
     def deleteUser(self,usernameDict):
         print("database/databaseHandler in deleteUser", usernameDict)
-        self.mydb.deleteOne({"Username": usernameDict})
+        self.mydb.deleteOne(usernameDict)
     def recoverDB(self,operationsArray):
         for stringOperation in operationsArray:
                 
