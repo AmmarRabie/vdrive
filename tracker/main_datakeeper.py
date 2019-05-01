@@ -33,7 +33,8 @@ def handle(data, db):
     if data.get("function") == "download": # new file was created
         filename, username = data.get("filename"), data.get("username")
         print(f"action: inserting file {username}/{filename} into the database")
-        db.insertFile(username, filename, getCurrMachineIp())
+        # db.insertFile(username, filename, getCurrMachineIp())
+        db.insertFile(username, filename, data.get("ip"))        
     if data.get("function") in ("download", "upload"):
         ip, port = data.get("ip"), data.get("port")
         # free port
