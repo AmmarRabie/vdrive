@@ -18,6 +18,12 @@ class Downloader:
         self.db = db
 
     def download(self):
+
+        # make function atomic
+        inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+        while inUse:
+            inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+
         emptyProcessesDB = self.db.getEmptyPortsAllMachines() # TODO: use this line instead of hard coded response
         # emptyProcesses = ["127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000", "127.0.0.1:6000"]
         emptyProcesses = []
@@ -31,5 +37,8 @@ class Downloader:
         #set busy
         self.db.setNodeBusyState(datakeeperChosen["nodeIP"], datakeeperChosen["port"], True)
 
+        # free atomic
+        self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})["inUse"]
+        
         # send the connection string
         self.socket.send_string(datakeeperChosen)

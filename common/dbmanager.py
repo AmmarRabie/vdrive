@@ -65,8 +65,7 @@ class DBManager:
 	#key and update will be like
 	# {"key": value}
 	def updateOne(self, key, update):
-		self.db.my_collection.update_one(key, { '$set':update}, upsert=True)
-
+		return self.db.my_collection.update_one(key, { '$set':update}, upsert=True)
 
 
 	#increments a value with a specefic number

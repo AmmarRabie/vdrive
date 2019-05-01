@@ -20,7 +20,13 @@ class Uploader:
 
 
     def upload(self, fileName, userId):
-        #get nodes containing the file
+
+        # make function atomic
+        inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+        while inUse:
+            inUse = self.db.db.updateOne({"atomic": "atomic"}, {"inUse": True})["inUse"]
+
+        # get nodes containing the file
         nodes = self.db.getPortsForDownload(userId, fileName)
 
         print(nodes)
@@ -28,9 +34,9 @@ class Uploader:
         if len(nodes) != 0:
             IP_Ports = []
 
-            #number of appended ports
+            # number of appended ports
             i = 0
-            #current port
+            # current port
             j = 0
             errors = 0
             while i < self.numPorts and errors < len(nodes):
@@ -49,7 +55,10 @@ class Uploader:
             print("WARNING: upload can't find a given file name on any nodes (may be the file name is not true)")
             IP_Ports = []
 
-        #send ports and ips
+        # free atomic
+        self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})["inUse"]
+
+        # send ports and ips
         self.socket.send_pyobj(IP_Ports[:self.numPorts])
 
 
