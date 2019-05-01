@@ -42,7 +42,7 @@ class Replicator:
 
             print("src = ", src, f"should be transferred to {requiredDestNum} machines")
 
-            destinations = (item for item in listOfNodes if ( item != src ))
+            destinations = (item for item in listOfNodes if ( item != src ) and not self.db.isFileOnNode(file["fileName"], item["nodeIP"], file["userID"]))
             availableNodesNum = len(destinations)
             if (availableNodesNum < requiredDestNum):
                 print(f"there is only {availableNodesNum} nodes, but {requiredDestNum} required")

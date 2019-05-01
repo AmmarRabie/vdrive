@@ -4,15 +4,17 @@ from threading import Thread
 from common.zmqHelper import zhelper
 from common.util import writeVideo, getCurrMachineIp
 import zmq
-from appconfig import KEEPERS_TO_KEEPERS_REPL_PORTS as KEEPERS_TO_KEEPERS_PORTS, TRACKER_IP, TRACKER_PORTS
+from appconfig import TRACKER_IP, TRACKER_PORTS_KEEPERS
 class ReplicatorDst:
     def __init__(self, port):
         # self.trackerSocket = zhelper.newSocket()
         self.mysocket = zhelper.newServerSocket(zmq.REP, "*", port)
-        trackerSocket = zhelper.newSocket(zmq.REQ, TRACKER_IP, TRACKER_PORTS)
+        trackerSocket = zhelper.newSocket(zmq.REQ, TRACKER_IP, TRACKER_PORTS_KEEPERS)
         self.downloader = Downloader(self.mysocket, trackerSocket, port)
+
     def handleKeeperRequest(self):
         request = self.mysocket.recv_json()
+        self.mysocket.send_string("ACK")
         self.downloader.download(request)
 
 # OPTIMIZE TODO: remove this class and add the a general uploader in the common dir that can do client and replicator uploader 
@@ -32,6 +34,7 @@ class Downloader:
         #   5- send the success message to the tracker to free this port
         # =================================================================================
         username, filename, numChunks = metadata.get("username"), metadata.get("filename"), metadata.get("numChunks")
+        print(f"receiving file: {filename} for user: {username}")
 
     	#start downloading
         vidData = []
