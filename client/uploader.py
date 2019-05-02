@@ -9,6 +9,8 @@ class Uploader:
 
     def upload(self, socket, token = None, filePath = "client/vtest.mp4"):
         ip, port = self.requestUpload(socket, token)
+        if (not ip):
+            return False
         print("your file will be uploaded to ", ip + ":" + port)
         uploadSocket = zhelper.newSocket(zmq.REQ, ip, (port,))
         data = readVideo(filePath)
@@ -40,7 +42,11 @@ class Uploader:
 		})
 
         # get ip:port for machine to communicate with
-        connectionStr = trackerSocket.recv_string()
+        response = trackerSocket.recv_json()
+        if 'err' in response.keys():
+            print(response['err'])
+            return '', ''
+        connectionStr = response['connectionStr']
         return connectionStr.split(":", 1)
     def _sendChunk(self):
         pass

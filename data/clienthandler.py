@@ -5,6 +5,8 @@
         • upload: client wants to upload a file, json send should have metadata of username, filename, numChunks
 """
 import sys
+import traceback
+
 sys.path.append("../")
 import zmq
 from downloader import Downloader
@@ -47,5 +49,9 @@ if __name__ == "__main__":
     port = DATA_KEEPER_PORTS[0]
     if len(sys.argv) >= 2:
         port = sys.argv[1]
-    main(port)
+    try:
+        main(port)
+    except Exception as e:
+        traceback.print_tb(e.__traceback__)
+        input("press any key to continue")
     pass

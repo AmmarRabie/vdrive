@@ -70,9 +70,12 @@ class Downloader:
     	})
     
         # get ports and ips
-		IP_Ports = socket.recv_pyobj()
-		
-		return IP_Ports
+		res = socket.recv_json()
+		if 'err' in res.keys:
+			print("error in downloader", "no ips available")
+			return ''
+
+		return res['ip_ports']
     
     
     
@@ -81,6 +84,8 @@ class Downloader:
 	def download(self, socket, token, videoName):
     	#get ip_ports
 		ip_ports = self.getIPs(socket, token, videoName)
+		if (ip_ports):
+			return False
 		print(ip_ports)
     	#ip_ports = [["localhost", 7000], ["localhost", 7001], ["localhost", 7002], ["localhost", 7003], ["localhost", 7004]]
     	#list for download threads

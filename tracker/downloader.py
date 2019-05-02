@@ -48,4 +48,4 @@ class Downloader:
         self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
         
         # send the connection string
-        self.socket.send_string(datakeeperChosen)
+        self.socket.send_json({"connectionStr": datakeeperChosen})

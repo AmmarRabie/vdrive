@@ -29,6 +29,11 @@ class Uploader:
 
         # get nodes containing the file
         nodes = self.db.getPortsForDownload(userId, fileName)
+        print(f"we have {len(nodes)} available for upload")
+        if (not nodes):
+            self.socket.send_json({"err": "no available ports"}) # TODO: handle this from the client
+            self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
+            return
 
         print(nodes)
 
@@ -60,7 +65,7 @@ class Uploader:
         self.db.db.updateOne({"atomic": "atomic"}, {"inUse": False})
 
         # send ports and ips
-        self.socket.send_pyobj(IP_Ports[:self.numPorts])
+        self.socket.send_json({"ip_ports": IP_Ports[:self.numPorts]})
 
 
 
