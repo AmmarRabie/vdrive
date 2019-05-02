@@ -28,7 +28,7 @@ iamAliveTopic="12345"
 
 class Slave:
     def __init__ (self):
-        self.mydb = DatabaseHandler("usersDatabaseSlave")
+        self.mydb = DatabaseHandler("usersDatabase")
         self.context=zmq.Context()
         
         self.toClientSocket=self.context.socket(zmq.REP)
@@ -61,7 +61,7 @@ class Slave:
             message=self.toClientSocket.recv_json()
             print ("[run] received from client",message)
             messageDict=json.loads(message)
-            User=self.mydb.retrieveUser({"Username":messageDict["Username"]})
+            User=self.mydb.retrieveUser(messageDict["Username"])
             if User["Password"]==messageDict["Password"]:
                 self.toClientSocket.send_string("1")
             else:
