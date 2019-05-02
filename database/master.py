@@ -189,7 +189,7 @@ class Master:
             #successsfully updated the slave,send to all clients that the slave is alive now
             messageDict={
                             "command":"connect",
-                            "address":address[0]
+                            "address":address
                         }
             toBeSent=handleSlavesTopic+' '+json.dumps(messageDict)
             self.handleSlavesClientSocket.send_string(toBeSent)
@@ -202,7 +202,7 @@ class Master:
         print("sending to client to disconnect from slave with address ",address)
         messageDict={
             "command":"disconnect",
-            "address":address[0]
+            "address":address
         }
         toBeSent=handleSlavesTopic+' '+json.dumps(messageDict)
         self.handleSlavesClientSocket.send_string(toBeSent)

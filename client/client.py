@@ -22,8 +22,10 @@ class Client:
 
     def downloadFile(self, token, fileName, savePathDir = "."):
         downloadedFile = self.downloader.download(self.socket, token, fileName)
+        if (not downloadedFile):
+            return False
         utils.writeVideo(downloadedFile, f"{savePathDir}/{fileName}_rec.mp4")
         return downloadedFile
-    
+
     def uploadLocalFile(self, token, filePath):
         return self.uploader.upload(self.socket, token, filePath)

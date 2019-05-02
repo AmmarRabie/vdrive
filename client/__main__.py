@@ -60,7 +60,13 @@ class Client(DbClint, FSClient):
             this function is to execute a user function interactively from terminal
         """
         name, kwargs = self._getUserFunction()
+        if (not name):
+            return False
+        if (name == 'logout'):
+            return True
+
         getattr(self, name)(self.token, **kwargs)
+        return False
 
     def _getUserFunction(self):
         """
@@ -72,6 +78,7 @@ class Client(DbClint, FSClient):
         2) download a file
         3) upload new file
         4) delete my account
+        5) log out
         """
         function = input(mes)
         name = ""
@@ -89,6 +96,8 @@ class Client(DbClint, FSClient):
         elif function == "4":
             name = "delete"
             print("ok, mesh mohm, e7na asln mesh 3aizink 3ndna fel database")
+        elif function == "5":
+            name = "logout"
         return name, kwargs
 
     def authenticate(self, username, password):
@@ -102,10 +111,12 @@ class Client(DbClint, FSClient):
 
 if __name__ == "__main__":
     c1 = Client()
-    valid = False
-    while(not valid):
-        valid = c1.interactiveAuthUser()
     exit = False
     while(not exit):
-        c1.interactiveUserFunction()
-        exit = str(input("do you want to exit Y/N")).capitalize() == 'Y'
+        valid = False
+        while(not valid):
+            valid = c1.interactiveAuthUser()
+        signout = False
+        while(not signout):
+            signout = c1.interactiveUserFunction()
+        # exit = str(input("do you want to exit Y/N")).capitalize() == 'Y'

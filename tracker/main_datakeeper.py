@@ -19,7 +19,7 @@ import zmq
 from common.zmqHelper import zhelper
 from common.util import getCurrMachineIp
 from trackerdbcontroller import TrackerDBController as Db
-
+import traceback
 def main(port):
     ip = getCurrMachineIp()
     socket = zhelper.newServerSocket(zmq.REP, ip, port)
@@ -48,4 +48,8 @@ if __name__ == "__main__":
     port = TRACKER_PORTS_KEEPERS[0]
     if len(sys.argv) >= 2:
         port = sys.argv[1]
-    main(port)
+    try:
+        main(port)
+    except Exception as e:
+        traceback.print_tb(e.__traceback__)
+        input("enter any key to exit")

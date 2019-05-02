@@ -114,8 +114,8 @@ class Client:
                 print(f"disconnecting from slave {address}")
                 try:
                     self.readSocket.disconnect(f"tcp://{address}:{serveUserPort}")
-                except  zmq.ZMQError as e:
-                    print("already disconnected")   
+                except zmq.ZMQError as e:
+                    print("already disconnected", e)   
             if dictMessage["command"]== "connect":
                 print(f"connecting to slave {address}")
                 self.readSocket.connect(f"tcp://{address}:{serveUserPort}")    
