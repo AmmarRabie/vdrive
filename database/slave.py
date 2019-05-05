@@ -62,7 +62,7 @@ class Slave:
             print ("[run] received from client",message)
             messageDict=json.loads(message)
             User=self.mydb.retrieveUser(messageDict["Username"])
-            if User["Password"]==messageDict["Password"]:
+            if User and User["Password"]==messageDict["Password"]:
                 self.toClientSocket.send_string("1")
             else:
                 self.toClientSocket.send_string("0")    
