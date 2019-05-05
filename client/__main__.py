@@ -66,7 +66,7 @@ class Client(DbClint, FSClient):
             return True
 
         getattr(self, name)(self.token, **kwargs)
-        return False
+        return name == 'delete'
 
     def _getUserFunction(self):
         """

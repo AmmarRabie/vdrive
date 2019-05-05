@@ -18,6 +18,16 @@ from common.util import generateToken
 from common.util import getCurrMachineIp
 handleSlavesTopic="9999"
 from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAliveSocketPort, slaveRecoveryHandlerPort,SLAVES_IPS,MASTER_IP
+from random import shuffle
+
+
+def rotateLeft(myList, index):
+    firstList = myList[:index]
+    secondList = myList[index+1:]
+    secondList.append(myList[index])
+    firstList.extend(secondList)
+    return firstList
+
 
 class Client:
     def __init__(self):
@@ -28,10 +38,14 @@ class Client:
         print(getCurrMachineIp())
         print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
-        self.readSocket.setsockopt(zmq.RCVTIMEO, 500)   
-        self.readSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
-        for ip in SLAVES_IPS :            
+
+        self.readSocket.setsockopt(zmq.RCVTIMEO, 500)
+        
+        # self.readSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
+        SLAVES_IPS.append(MASTER_IP)
+        for ip in SLAVES_IPS:            
             self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")
+        self.currentSocketIndex = -1
         thread = threading.Thread(target=self.handleSlaves, args=())
         thread.start()    
 
@@ -87,16 +101,24 @@ class Client:
             "operation":"authenticate"
         }
         print("database/client: authenticate function dict", dictMessage)
-        self.readSocket.send_json(json.dumps(dictMessage))
         while True:
             try:
+                self.readSocket.send_json(json.dumps(dictMessage))
+                self.currentSocketIndex += 1
                 message=self.readSocket.recv_string()
                 print("message")
                 if message == "1":
                     return generateToken(username, password)
                 return ""
             except zmq.ZMQError as e:
-                print("couldn't receive")
+                print("couldn't receive", e)
+                rotateLeft(SLAVES_IPS, self.currentSocketIndex)
+                self.currentSocketIndex = -1
+                self.readSocket.close()
+                self.readSocket =self.context.socket(zmq.REQ)
+                self.readSocket.setsockopt(zmq.RCVTIMEO, 200)
+                for ip in SLAVES_IPS:
+                    self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")
                 pass
                 #do nothing the client will  try to send to another DB
 
