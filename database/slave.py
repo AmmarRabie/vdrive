@@ -75,7 +75,7 @@ class Slave:
             #print (toBeSent)
             self.iamAliveSocket.send_string(toBeSent)
             #print("sent")
-            #time.sleep(5)
+            time.sleep(0.5)
     def updateDB(self):
         while True:
             message=self.toMasterSocket.recv_json()
