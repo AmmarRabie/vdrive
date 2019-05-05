@@ -21,6 +21,9 @@ from appconfig import serveUserPort, updateClientsPort, updateSlavesPort, iamAli
 from random import shuffle
 
 slaves_ips = SLAVES_IPS
+whitlist = {}
+for ip in slaves_ips:
+    whitlist.update({ip: True})
 
 def rotateLeft(myList, index):
     firstList = myList[:index]
@@ -36,8 +39,6 @@ class Client:
         self.context = zmq.Context()
         self.insertSocket=self.context.socket(zmq.REQ)
         self.insertSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
-        print(getCurrMachineIp())
-        print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
 
         self.readSocket.setsockopt(zmq.RCVTIMEO, 1000)
@@ -61,14 +62,11 @@ class Client:
             "operation":"insert"
         }
         print("sending to master with ip")
-        #   print(sys.argv[1])
-        print(serveUserPort)       
         self.insertSocket.send_json(json.dumps(dictMessage))
         print("sent")
         try:
             message=self.insertSocket.recv_string()
-            print ("received from master")
-            print(message)
+            print ("received from master", message)
             token = generateToken(username, password) if message == "1" else ""
             return token
         except zmq.ZMQError as e:
@@ -108,7 +106,6 @@ class Client:
                 self.readSocket.send_json(json.dumps(dictMessage))
                 self.currentSocketIndex = (self.currentSocketIndex + 1) % len(slaves_ips)
                 message=self.readSocket.recv_string()
-                print("message")
                 if message == "1":
                     return generateToken(username, password)
                 return ""
@@ -116,14 +113,13 @@ class Client:
                 print("couldn't receive", e)
                 slaves_ips = rotateLeft(slaves_ips, self.currentSocketIndex)
                 print(slaves_ips)
-                print(f"sending to slave with ip {slaves_ips[self.currentSocketIndex]}")
                 self.currentSocketIndex = -1
                 self.readSocket.close()
                 self.readSocket =self.context.socket(zmq.REQ)
                 self.readSocket.setsockopt(zmq.RCVTIMEO, 1000)
-                for ip in slaves_ips:
+                print("whitelist are", whitlist)
+                for ip in whitlist.keys():
                     self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")
-                pass
                 #do nothing the client will  try to send to another DB
 
     def handleSlaves(self):
@@ -137,16 +133,19 @@ class Client:
             dictMessage=literal_eval(message)
             address=dictMessage["address"]
             if dictMessage["command"]=="disconnect":
-                print(f"disconnecting from slave {address}")
+                # print(f"disconnecting from slave {address}")
                 try:
                     self.readSocket.disconnect(f"tcp://{address}:{serveUserPort}")
+                    del whitlist[address]
                     # slaves_ips.remove(address)
                 except zmq.ZMQError as e:
                     print("already disconnected", e)   
             if dictMessage["command"]== "connect":
-                print(f"connecting to slave {address}")
+                # print(f"connecting to slave {address}")
                 self.readSocket.connect(f"tcp://{address}:{serveUserPort}")
                 slaves_ips.append(address)
+                whitlist.update({address: True})
+                
 
 
 if __name__=="__main__":

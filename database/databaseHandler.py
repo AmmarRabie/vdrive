@@ -39,7 +39,7 @@ class DatabaseHandler:
                     toBeDeleted={
                         "Username":operationDict["Username"]
                     }
-                    self.deleteOne(toBeDeleted)
+                    self.mydb.deleteOne(toBeDeleted)
         
 
 
