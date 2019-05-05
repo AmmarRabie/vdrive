@@ -13,6 +13,7 @@ class ReplicatorSrc:
 
     def handleTrackerRequest(self):
         request = self.mysocket.recv_json()
+        print("received a request:", request)
         self.file, destinations = request.get("file"), request.get("dests")
         threads = []
         for dest in destinations:

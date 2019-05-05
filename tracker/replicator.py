@@ -46,7 +46,7 @@ class Replicator:
             availableNodesNum = len(destinations)
             if (availableNodesNum < requiredDestNum):
                 print(f"there is only {availableNodesNum} nodes, but {requiredDestNum} required")
-            selectedMachines = destinations[:max(availableNodesNum, requiredDestNum)]
+            selectedMachines = destinations[:min(availableNodesNum, requiredDestNum)]
 
             
             print("selectedMachines=", selectedMachines)
