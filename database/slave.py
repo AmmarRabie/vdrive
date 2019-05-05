@@ -37,7 +37,7 @@ class Slave:
         self.toMasterSocket=self.context.socket(zmq.REP)
         self.toMasterSocket.bind(f"tcp://*:{updateSlavesPort}")
         #self.toMasterSocket.setsockopt_string(zmq.SUBSCRIBE, updateSlavesTopic)
-        self.toMasterSocket.setsockopt(zmq.RCVTIMEO, 30)
+        # self.toMasterSocket.setsockopt(zmq.RCVTIMEO, 30)
         
         self.iamAliveSocket=self.context.socket(zmq.PUB)
         self.iamAliveSocket.bind(f"tcp://*:{iamAliveSocketPort}")
