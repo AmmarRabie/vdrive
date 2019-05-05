@@ -28,7 +28,7 @@ class Client:
         print(getCurrMachineIp())
         print("+++++++++++++++++++++++++++++")
         self.readSocket =self.context.socket(zmq.REQ)
-        # self.readSocket.setsockopt(zmq.RCVTIMEO, 150)   
+        self.readSocket.setsockopt(zmq.RCVTIMEO, 500)   
         self.readSocket.connect(f"tcp://{MASTER_IP}:{serveUserPort}")
         for ip in SLAVES_IPS :            
             self.readSocket.connect(f"tcp://{ip}:{serveUserPort}")

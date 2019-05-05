@@ -131,7 +131,7 @@ class TrackerDBController:
 	#insert a new file for a specefic user in node
 	def insertFile(self, userID, fileName, nodeIp):
 		#insert file
-		self.db.insertOne({"userID": userID, "fileName": fileName , "nodeIP":nodeIp})
+		self.db.updateOne({"userID": userID, "fileName": fileName} , {"nodeIP":nodeIp})
 		#get node that file is inserted to
 		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive"],[nodeIp,None,True])
 		print(desiredNode, userID, fileName, nodeIp)
@@ -220,4 +220,5 @@ if __name__ == "__main__":
 	# cont.addFileToNode(1, "1.mp4", "192.168.1.2")
 	# cont.addFileToNode(1, "1.mp4", "192.168.1.3")
 	# cont.addFileToNode(1, "1.mp4", "192.168.1.4")
-	print(cont.getPortsForDownload(1, "1.mp4"))
+	#print(cont.getPortsForDownload(1, "1.mp4"))
+	cont.insertFile("miro", "miroo", "192.168.43.231")
