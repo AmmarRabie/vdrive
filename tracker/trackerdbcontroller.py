@@ -136,7 +136,7 @@ class TrackerDBController:
 		desiredNode = self.retrAllHaveAttrWithValue(["nodeIP", "numFiles", "alive"],[nodeIp,None,True])
 		print(desiredNode, userID, fileName, nodeIp)
 		#increment number of files this node has
-		self.db.incrementOne({ "nodeIP": desiredNode[0]["nodeIP"], "numFiles":int(desiredNode[0]["numFiles"]), "alive":True }, {"numFiles": 1})
+		self.db.incrementOne({ "nodeIP": desiredNode[0]["nodeIP"], "port":-1, "numFiles":int(desiredNode[0]["numFiles"])}, {"numFiles": 1})
 
 
 
