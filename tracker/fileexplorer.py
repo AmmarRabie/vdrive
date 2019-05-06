@@ -1,6 +1,5 @@
 import sys
 import zmq
-from tokenanalyzer import TokenAnalyzer
 from common.zmqHelper import zhelper
 from appconfig import *
 
